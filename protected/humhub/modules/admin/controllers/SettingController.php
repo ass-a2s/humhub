@@ -10,7 +10,6 @@ namespace humhub\modules\admin\controllers;
 
 use Yii;
 use humhub\libs\Helpers;
-use humhub\libs\ThemeHelper;
 use humhub\models\UrlOembed;
 use humhub\modules\admin\components\Controller;
 use humhub\modules\admin\models\Log;
@@ -60,7 +59,7 @@ class SettingController extends Controller
     public function getAccessRules()
     {
         return [
-            ['permissions' => \humhub\modules\admin\permissions\ManageSettings::className()]
+            ['permissions' => \humhub\modules\admin\permissions\ManageSettings::class]
         ];
     }
 
@@ -110,6 +109,7 @@ class SettingController extends Controller
         if ($form->load(Yii::$app->request->post()) && $form->validate() && $form->save()) {
             Yii::$app->cache->flush();
             Yii::$app->assetManager->clear();
+            Yii::$app->view->theme->variables->flushCache();
             $this->view->success(Yii::t('AdminModule.controllers_SettingController', 'Saved and flushed cache'));
             return $this->redirect(['/admin/setting/caching']);
         }
@@ -194,14 +194,8 @@ class SettingController extends Controller
             ]);
         }
 
-        $themes = [];
-        foreach (ThemeHelper::getThemes() as $theme) {
-            $themes[$theme->name] = $theme->name;
-        }
-
         return $this->render('design', [
             'model' => $form,
-            'themes' => $themes,
             'logo' => new \humhub\libs\LogoImage()
         ]);
     }

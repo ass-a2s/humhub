@@ -9,24 +9,25 @@
 namespace humhub\modules\comment\models;
 
 use Yii;
-use yii\db\ActiveRecord;
 use yii\base\Exception;
-use humhub\modules\user\models\User;
-use humhub\modules\post\models\Post;
-use humhub\modules\content\interfaces\ContentOwner;
-use humhub\modules\comment\activities\NewComment;
-use humhub\modules\comment\notifications\NewComment as NewCommentNotification;
-use humhub\modules\comment\live\NewComment as NewCommentLive;
-use humhub\modules\content\components\ContentAddonActiveRecord;
+use yii\db\ActiveRecord;
 use humhub\components\behaviors\PolymorphicRelation;
-use humhub\modules\user\models\Mentioning;
-use humhub\modules\search\interfaces\Searchable;
+use humhub\modules\comment\activities\NewComment;
+use humhub\modules\comment\live\NewComment as NewCommentLive;
+use humhub\modules\comment\notifications\NewComment as NewCommentNotification;
+use humhub\modules\content\components\ContentActiveRecord;
+use humhub\modules\content\components\ContentAddonActiveRecord;
+use humhub\modules\content\interfaces\ContentOwner;
+use humhub\modules\content\widgets\richtext\RichText;
+use humhub\modules\post\models\Post;
+use humhub\modules\search\libs\SearchHelper;
 use humhub\modules\space\models\Space;
+use humhub\modules\user\models\User;
+
 
 /**
  * This is the model class for table "comment".
  *
- * The followings are the available columns in table 'comment':
  * @property integer $id
  * @property string $message
  * @property integer $object_id
@@ -70,9 +71,9 @@ class Comment extends ContentAddonActiveRecord implements ContentOwner
     {
         return [
             [
-                'class' => PolymorphicRelation::className(),
+                'class' => PolymorphicRelation::class,
                 'mustBeInstanceOf' => [
-                    ActiveRecord::className(),
+                    ActiveRecord::class,
                 ]
             ]
         ];
@@ -85,7 +86,7 @@ class Comment extends ContentAddonActiveRecord implements ContentOwner
     {
         $this->flushCache();
 
-		return parent::beforeDelete();
+        return parent::beforeDelete();
     }
 
     /**
@@ -99,7 +100,7 @@ class Comment extends ContentAddonActiveRecord implements ContentOwner
             Yii::error($ex);
         }
 
-		parent::afterDelete();
+        parent::afterDelete();
     }
 
     /**
@@ -107,8 +108,13 @@ class Comment extends ContentAddonActiveRecord implements ContentOwner
      */
     public function flushCache()
     {
-        Yii::$app->cache->delete('commentCount_' . $this->object_model . '_' . $this->object_id);
-        Yii::$app->cache->delete('commentsLimited_' . $this->object_model . '_' . $this->object_id);
+        static::flushCommentCache($this->object_model, $this->object_id);
+    }
+
+    public static function flushCommentCache($model, $id)
+    {
+        Yii::$app->cache->delete('commentCount_' . $model . '_' . $id);
+        Yii::$app->cache->delete('commentsLimited_' . $model . '_' . $id);
     }
 
     /**
@@ -117,29 +123,35 @@ class Comment extends ContentAddonActiveRecord implements ContentOwner
      * @param bool $insert
      * @param array $changedAttributes
      * @return bool
+     * @throws Exception
      */
     public function afterSave($insert, $changedAttributes)
     {
-        // flush the cache
         $this->flushCache();
-
-        NewComment::instance()->about($this)->save();
+        
+        if($insert) {
+            NewComment::instance()->about($this)->create();
+        }
 
         // Handle mentioned users
         // Execute before NewCommentNotification to avoid double notification when mentioned.
-        $mentionedUsers = Mentioning::parse($this, $this->message);
+        $processResult = RichText::postProcess($this->message, $this);
+        $mentionedUsers = (isset($processResult['mentioning'])) ? $processResult['mentioning'] : [];
 
         if ($insert) {
-            $followers = $this->getCommentedRecord()->getFollowers(null, true);
-            $this->filterMentionings($followers, $mentionedUsers);
+            $followerQuery = $this->getCommentedRecord()->getFollowers(null, true, true);
+
+            // Remove mentioned users from followers query to avoid double notification
+            if (count($mentionedUsers) !== 0) {
+                $followerQuery->andWhere(['NOT IN', 'user.id', array_map(function (User $user) {
+                    return $user->id;
+                }, $mentionedUsers)]);
+            }
 
             // Update updated_at etc..
             $this->refresh();
 
-            NewCommentNotification::instance()
-                    ->from(Yii::$app->user->getIdentity())
-                    ->about($this)
-                    ->sendBulk($followers);
+            NewCommentNotification::instance()->from($this->user)->about($this)->sendBulk($followerQuery);
 
             if ($this->content->container) {
                 Yii::$app->live->send(new NewCommentLive([
@@ -156,27 +168,6 @@ class Comment extends ContentAddonActiveRecord implements ContentOwner
         parent::afterSave($insert, $changedAttributes);
     }
 
-    /**
-     * Filters out all users contained in $mentionedUsers from $followers
-     *
-     * @param \humhub\modules\user\models\User[] $followers
-     * @param \humhub\modules\user\models\User[] $mentionedUsers
-     */
-    private function filterMentionings(&$followers, $mentionedUsers)
-    {
-        if (empty($mentionedUsers)) {
-            return;
-        }
-
-        foreach($followers as $i => $follower) {
-            foreach($mentionedUsers as $mentioned) {
-                if ($follower->is($mentioned)) {
-                    unset($followers[$i]);
-                    continue 2;
-                }
-            }
-        }
-    }
 
     /**
      * Force search update of underlying content object.
@@ -184,8 +175,10 @@ class Comment extends ContentAddonActiveRecord implements ContentOwner
      */
     protected function updateContentSearch()
     {
-        if ($this->getCommentedRecord() instanceof Searchable) {
-            Yii::$app->search->update($this->getCommentedRecord());
+        /** @var ContentActiveRecord $content */
+        $contentRecord = $this->getCommentedRecord();
+        if ($contentRecord !== null) {
+            SearchHelper::queueUpdate($contentRecord);
         }
     }
 
@@ -206,7 +199,7 @@ class Comment extends ContentAddonActiveRecord implements ContentOwner
      * @param $id
      * @param int $limit
      *
-     * @return array|mixed|\yii\db\ActiveRecord[]
+     * @return Comment[] the comments
      */
     public static function GetCommentsLimited($model, $id, $limit = 2)
     {

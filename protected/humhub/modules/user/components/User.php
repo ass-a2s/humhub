@@ -11,17 +11,20 @@ namespace humhub\modules\user\components;
 use humhub\modules\user\authclient\AuthClientHelpers;
 use humhub\modules\user\authclient\Password;
 use humhub\modules\user\authclient\interfaces\AutoSyncUsers;
+use humhub\modules\user\events\UserEvent;
 use Yii;
 use yii\authclient\ClientInterface;
 use yii\db\Expression;
 
 /**
  * Description of User
- *
+ * @property \humhub\modules\user\models\User|null $identity
  * @author luke
  */
 class User extends \yii\web\User
 {
+
+    const EVENT_BEFORE_SWITCH_IDENTITY = 'beforeSwitchIdentity';
 
     /**
      * @var ClientInterface[] the users authclients
@@ -110,7 +113,7 @@ class User extends \yii\web\User
     public function canChangePassword()
     {
         foreach ($this->getAuthClients() as $authClient) {
-            if ($authClient->className() == Password::className()) {
+            if ($authClient->className() == Password::class) {
                 return true;
             }
         }
@@ -183,12 +186,21 @@ class User extends \yii\web\User
 
     /**
      * Checks if the system configuration allows access for guests
-     * 
+     *
      * @return boolean is guest access enabled and allowed
      */
     public static function isGuestAccessEnabled()
     {
         return (Yii::$app->getModule('user')->settings->get('auth.allowGuestAccess'));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function switchIdentity($identity, $duration = 0)
+    {
+        $this->trigger(self::EVENT_BEFORE_SWITCH_IDENTITY, new UserEvent(['user' => $identity]));
+        parent::switchIdentity($identity, $duration);
     }
 
 }

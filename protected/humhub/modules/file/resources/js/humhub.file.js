@@ -38,8 +38,12 @@ humhub.module('file', function (module, require, $) {
 
         var that = this;
         this.on('upload', function () {
-            that.$.trigger('click');
+            that.run();
         });
+    };
+
+    Upload.prototype.run = function () {
+        this.$.trigger('click');
     };
 
     Upload.prototype.validate = function () {
@@ -129,6 +133,7 @@ humhub.module('file', function (module, require, $) {
     Upload.prototype.reset = function () {
         this.fileCount = 0;
         this.$form.find('input[name="' + this.options.name + '"]').remove();
+        this.$form.find('input[name="' + this.options.uploadSubmitName + '"]').remove();
         if (this.preview) {
             this.preview.reset();
         }
@@ -139,14 +144,22 @@ humhub.module('file', function (module, require, $) {
     };
 
     Upload.prototype.initPreview = function () {
+        var $preview;
+
         if (this.$.data('upload-preview')) {
-            this.preview = Preview.instance(this.$.data('upload-preview'));
+            $preview = $(this.$.data('upload-preview'));
+        } else {
+            $preview = $('#'+this.$.attr('id')+'_preview');
+        }
+
+        if($preview.length) {
+            this.preview = Preview.instance($preview);
             if (this.preview.setSource) {
                 this.preview.setSource(this);
             } else {
                 this.preview.source = this;
             }
-            
+
             // Get current file count form preview component.
             if(object.isFunction(this.preview.getFileCount)) {
                 this.fileCount = this.preview.getFileCount();
@@ -162,7 +175,15 @@ humhub.module('file', function (module, require, $) {
     };
 
     Upload.prototype.initProgress = function () {
-        this.progress = Progress.instance(this.$.data('upload-progress'));
+        var $progress;
+
+        if(this.$.data('upload-progress')) {
+            $progress = $(this.$.data('upload-progress'));
+        } else {
+            $progress = $('#'+this.$.attr('id')+'_progress');
+        }
+
+        this.progress = Progress.instance($progress);
     };
 
     Upload.prototype.initFileUpload = function () {
@@ -234,7 +255,7 @@ humhub.module('file', function (module, require, $) {
         }
 
         //deprecated event use uploadEnd
-        this.fire('humhub:file:uploadEnd', [response]);;
+        this.fire('humhub:file:uploadEnd', [response]);
         this.fire('uploadEnd', [response]);
     };
 
@@ -338,6 +359,7 @@ humhub.module('file', function (module, require, $) {
     };
 
     Preview.prototype.add = function (file) {
+        file.name = string.encode(file.name);
         file.galleryId = this.$.attr('id') + '_file_preview_gallery';
         var template = this.getTemplate(file);
         
@@ -439,6 +461,25 @@ humhub.module('file', function (module, require, $) {
         });
     };
 
+    var getFileUrl = function(guid, download) {
+        var tmpl = download ? module.config.url.download : module.config.url.load;
+        return tmpl.replace('-guid-', guid);
+    };
+
+    var filterFileUrl = function(url, download) {
+        var result = {
+            url: url,
+            guid: null
+        };
+
+        if(url.indexOf('file-guid:') === 0 || url.indexOf('file-guid-') === 0) {
+            result.guid = url.substr(10, url.length);
+            result.url = humhub.modules.file.getFileUrl(result.guid, download);
+        }
+
+        return result;
+    };
+
     var _delete = function (file) {
         var options = {
             url: module.config.upload.deleteUrl,
@@ -451,8 +492,8 @@ humhub.module('file', function (module, require, $) {
     };
 
     Preview.template = {
-        root: '<ul class="files" style="list-style:none; margin:0;padding:0px;"></ul>',
-        file_edit: '<li class="file-preview-item mime {mimeIcon}" data-preview-guid="{guid}" style="padding-left:24px;display:none;"><span class="file-preview-content">{name}<span class="file_upload_remove_link" data-ui-loader> <i class="fa fa-times-circle"></i>&nbsp;</span></li>',
+        root: '<ul class="files" style="list-style:none; margin:0;padding:0"></ul>',
+        file_edit: '<li class="file-preview-item mime {mimeIcon}" data-preview-guid="{guid}" style="padding-left:24px;display:none;"><span class="file-preview-content">{name}&nbsp;&nbsp;<span class="file_upload_remove_link" data-ui-loader><i class="fa fa-trash-o"></i>&nbsp;</span></li>',
         file: '<li class="file-preview-item mime {mimeIcon}" data-preview-guid="{guid}" style="padding-left:24px;display:none;"><span class="file-preview-content"><span class="{highlight}">{openLink}</span><span class="time file-fileInfo" style="padding-right: 20px;"> - {size_format}</span></li>',
         file_image: '<li class="file-preview-item mime {mimeIcon}" data-preview-guid="{guid}" style="padding-left:24px;display:none;"><span class="file-preview-content {highlight}">{openLink}<span class="time file-fileInfo" style="padding-right: 20px;"> - {size_format}</span></li>',
         popover: '<img alt="{name}" src="{thumbnailUrl}" />'
@@ -484,6 +525,8 @@ humhub.module('file', function (module, require, $) {
         init: init,
         actionUpload: upload,
         Upload: Upload,
-        Preview: Preview
+        Preview: Preview,
+        getFileUrl: getFileUrl,
+        filterFileUrl: filterFileUrl
     });
 });

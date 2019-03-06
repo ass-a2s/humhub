@@ -1,15 +1,91 @@
-# Module Migration Guide
+Module Migration Guide
+======================
 
-Here you will learn how you can adapt existing modules to working fine with actually versions.
+This guide provides useful information about migrating your custom modules in order to keep them compatible with new HumHub versions.
+You should keep your modules up-to-date by removing deprecations and align code breaking changes of the platform and ideally test your
+modules against new HumHub version. Also keep in mind to align the `minVersion` of your module when using new features.
 
-## Migrate from 1.1 to 1.2
+You can execute code for specific versions by using the `version_compare` function as:
+
+```php
+if (version_compare(Yii::$app->version, '1.3', '>')) {
+    // Use some 1.3+ features here
+} else {
+     // Compatibility code for older versions
+}
+```
+
+
+Migrate from 1.2 to 1.3
+-----------------------
+
+### New Stream Javascript API
+
+In v1.3 we've reworked the Stream Javascript API. Please check the [Javascript Stream](javascript-stream.md) documentation
+for more information.
+
+### ContentContainer Controller
+
+The base controller attributes `autoCheckContainerAccess` and `hideSidebar` are not longer available.
+
+### Queuing 
+
+Queue related classes has been moved into an own module `humhub\modules\queue`.
+The existing `humhub\components\queue\ActiveJob` is declared as deprecated and will be removed in 1.4.
+
+### Partial user deletion (Soft Delete)
+
+Added new user status (User::SOFT_DELETED). You can find more information here: [Users](modules-users.md)
+
+### Widgets
+
+Moved all form and field related widgets from `humhub\widgets` to `humhub\modules\ui\form\widgets` namespace.
+There is a compatibility layer for the 1.3 release.
+
+### Social Activities (Notification & Activities)
+
+- Added new 'requireOriginator' flag with default to true
+- Added new 'requireSoruce' flag with default to true
+
+### Deprecations
+
+#### Removed Deprecated 
+
+ - formatterApp Application Component (Yii::$app->formatterApp)
+ 
+#### New Deprecations
+
+ - `humhub\components\Theme.php` -> `humhub\modules\ui\view\components\Theme`
+ - `humhub\components\View` -> `humhub\modules\ui\view\components\View`
+ - `humhub\libs\ThemeHelper` -> `humhub\modules\ui\view\components\ThemeHelper`
+ - `humhub\modules\content\widgets\richtext\HumHubRichText` -> Compatibility class for the legacy rich-text, which was replaced with prosemirror richtext.
+ - `humhub\modules\content\widgets\richtext\HumHubRichTextEditor` -> Compatibility class for the legacy rich-text, which was replaced with prosemirror richtext editor.
+ - `humhub\widgets\RichText` -> `humhub\modules\content\widgets\richtext\RichText`
+ - `humhub\widgets\RichTextField` -> `humhub\modules\content\widgets\richtext\RichTextField`
+ - `humhub\modules\user\models\Mentioning::parse()` -> `humhub\modules\content\widgets\richtext\RichText::processText()`
+ 
+We moved most of the `humhub\widgets` into the new `ui` core module as:
+
+ - `humhub\widgets\ActiveField`
+ - `humhub\widgets\ActiveForm`
+ - `humhub\widgets\BasePickerField`
+ - `humhub\widgets\ColorPickerField`
+ - `humhub\widgets\ContentTagDropDown`
+ - `humhub\widgets\DatePicker`
+ - `humhub\widgets\DurationPicker`
+ - `humhub\widgets\InputWidget`
+ - `humhub\widgets\MarkdownField`
+ - `humhub\widgets\MarkdownFieldModals`
+ - `humhub\widgets\MultiSelectField`
+ - `humhub\widgets\TimePicker`
+
+Migrate from 1.1 to 1.2
+-----------------------
 
 ### Stream / Content Changes
 
 The models WallEntry and Wall were removed. So all corresponding methods like getFirstWallEntryId() are not longer available.
 The stream handling is now handled directly by the Content model. Also all stream classes (widgets, actions) are moved into the humhub\modules\stream package.
-
-
 
 ### File module changes
 
@@ -37,10 +113,6 @@ Please refer the new [File Handling](files.md) documentation section for more de
 - Moved file store content by attribute capabilities from File model to FileContent model
 - Created UploadAction/DownloadAction classes
 
-### Javascript API changes
-
-TBD
-
 #### Pjax + TopNavigation:
 Use
 
@@ -48,12 +120,9 @@ public $topMenuRoute = '/dashboard/dashboard';
 
 within your controller for pjax topmenu support.
 
-### Asset Handling changes
 
-TBD
-
-
-## Migrate from 1.0 to 1.1
+Migrate from 1.0 to 1.1
+-----------------------
 
 - Dropped unused space attribute "website"
 
@@ -77,8 +146,10 @@ TBD
 
 - New administration menu structure
 
-## Migrate from 0.20 to 1.0
 
+
+Migrate from 0.20 to 1.0
+------------------------
 
 ## Migrate from 0.12 to 0.20
 
@@ -87,12 +158,17 @@ TBD
 This requires an extensive migration of all custom modules/themes.
 Find more details here: [HumHub 0.20 Migration](modules-migrate-0.20.md)
 
-## Migrate from 0.11 to 0.12
+
+
+Migrate from 0.11 to 0.12
+-------------------------
 
 - Rewritten Search 
 
-## Migrate from 0.10 to 0.11
 
+
+Migrate from 0.10 to 0.11
+-------------------------
 No breaking changes.
 
 - Now handle ContentContainerController layouts, new option showSidebar

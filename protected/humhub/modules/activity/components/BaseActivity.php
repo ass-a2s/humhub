@@ -20,6 +20,7 @@ use humhub\modules\content\models\Content;
 /**
  * BaseActivity is the base class for all activities.
  *
+ * @property Activity $record
  * @author luke
  */
 abstract class BaseActivity extends SocialActivity
@@ -64,23 +65,14 @@ abstract class BaseActivity extends SocialActivity
     }
 
     /**
-     * Stores the activity in database
-     *
-     * @return boolean
-     */
-    public function save()
-    {
-        return $this->record->save();
-    }
-
-    /**
      * Creates an activity model and determines the contentContainer/visibility
      *
      * @throws \yii\base\Exception
+     * @return static
      */
     public function create()
     {
-        if ($this->moduleId == '') {
+        if (empty($this->moduleId)) {
             throw new InvalidConfigException('No moduleId given!');
         }
 
@@ -89,6 +81,8 @@ abstract class BaseActivity extends SocialActivity
         }
 
         $this->saveModelInstance();
+
+        return $this;
     }
 
     /**
@@ -118,7 +112,9 @@ abstract class BaseActivity extends SocialActivity
 
     /**
      * Builder function for setting ContentContainerActiveRecord
+     *
      * @param \humhub\modules\content\components\ContentContainerActiveRecord $container
+     * @return BaseActivity
      */
     public function container($container)
     {
@@ -150,6 +146,16 @@ abstract class BaseActivity extends SocialActivity
         if (!$this->record->save()) {
             throw new Exception('Could not save activity!' . $this->record->getErrors());
         }
+    }
+
+    /**
+     * Stores the activity in database
+     *
+     * @return boolean
+     */
+    public function save()
+    {
+        return $this->record->save();
     }
 
     /**

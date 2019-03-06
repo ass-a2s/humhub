@@ -89,7 +89,7 @@ $this->registerJs("var profileImageUploaderUrl='" . Url::toRoute('/user/account/
                                class="btn btn-info btn-sm" data-target="#globalModal"><i
                                     class="fa fa-edit"></i></a>-->
                             <?php
-                            echo \humhub\widgets\ModalConfirm::widget(array(
+                            echo \humhub\widgets\ModalConfirm::widget([
                                 'uniqueID' => 'modal_profileimagedelete',
                                 'linkOutput' => 'a',
                                 'title' => Yii::t('UserModule.widgets_views_deleteImage', '<strong>Confirm</strong> image deleting'),
@@ -101,7 +101,7 @@ $this->registerJs("var profileImageUploaderUrl='" . Url::toRoute('/user/account/
                                 'style' => $user->getProfileImage()->hasImage() ? '' : 'display: none;',
                                 'linkHref' => Url::toRoute(["/user/account/delete-profile-image", 'type' => 'profile']),
                                 'confirmJS' => 'function(jsonResp) { resetProfileImage(jsonResp); }'
-                            ));
+                            ]);
                             ?>
                         </div>
 
@@ -137,7 +137,7 @@ $this->registerJs("var profileImageUploaderUrl='" . Url::toRoute('/user/account/
 
                     <div class="row">
                         <div class="col-md-6">
-                            <?php echo $form->field($user->profile, 'birthday')->widget(yii\jui\DatePicker::className(), ['dateFormat' => Yii::$app->formatter->dateInputFormat, 'clientOptions' => [], 'options' => ['class' => 'form-control']]); ?>
+                            <?php echo $form->field($user->profile, 'birthday')->widget(yii\jui\DatePicker::class, ['dateFormat' => Yii::$app->formatter->dateInputFormat, 'clientOptions' => [], 'options' => ['class' => 'form-control']]); ?>
                         </div>
                         <div class="col-md-6">
                             <br><br>

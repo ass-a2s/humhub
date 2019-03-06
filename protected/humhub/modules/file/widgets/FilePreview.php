@@ -2,9 +2,17 @@
 
 namespace humhub\modules\file\widgets;
 
-use humhub\modules\file\libs\FileHelper;
-use humhub\widgets\JsWidget;
+use humhub\components\ActiveRecord;
+use Yii;
+use yii\base\Model;
+use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
+use humhub\widgets\JsWidget;
+use humhub\modules\file\models\File;
+use humhub\modules\file\libs\FileHelper;
+use humhub\modules\search\libs\SearchHelper;
+use humhub\modules\search\controllers\SearchController;
+use humhub\modules\file\converter\TextConverter;
 
 /**
  * 
@@ -14,14 +22,49 @@ use yii\helpers\Html;
 class FilePreview extends JsWidget
 {
 
+    /**
+     * @inheritdoc
+     */
     public $jsWidget = "file.Preview";
+
+    /**
+     * @var File[]|string[] file items to display if no $model is given or $model is a new record.
+     */
     public $items;
+
+    /**
+     * @var Model model object used to fetch default items if [[items]] is not set
+     */
     public $model;
+
+    /**
+     * @var string model attribute used in combination with [[model]]
+     */
+    public $attribute;
+
+    /**
+     * @var bool weather or not to hide image files
+     */
     public $hideImageFileInfo = false;
+
+    /**
+     * @var bool weather or not the file previe is editable
+     */
     public $edit = false;
+
+    /**
+     * @inheritdoc
+     */
     public $visible = false;
-    
+
+    /**
+     * @var bool weather or not to prevent popover previews for images
+     */
     public $preventPopover = false;
+
+    /**
+     * @var string popover position
+     */
     public $popoverPosition = 'right';
 
     /**
@@ -58,12 +101,15 @@ class FilePreview extends JsWidget
     protected function getFileData()
     {
         $files = $this->getFiles();
-        
+
         $result = [];
 
         foreach ($files as $file) {
-            if($file) {
-                $result[] = FileHelper::getFileInfos($file);
+            if ($file) {
+                if(is_string($file)) {
+                    $file = File::findOne(['guid' => $file]);
+                }
+                $result[] = ArrayHelper::merge(FileHelper::getFileInfos($file), ['highlight' => $this->isHighlighed($file)]);
             }
         }
 
@@ -76,14 +122,44 @@ class FilePreview extends JsWidget
             return [];
         }
 
-        if($this->items) {
+        if ($this->items) {
             return $this->items;
         }
 
-        if($this->showInStream === null) {
+        if(!($this->model instanceof ActiveRecord) && $this->attribute) {
+            return Html::getAttributeValue($this->model, $this->attribute);
+        }
+
+        if(!($this->model instanceof ActiveRecord)) {
+            return [];
+        }
+
+        if ($this->showInStream === null) {
             return $this->model->fileManager->findAll();
         } else {
             return $this->model->fileManager->findStreamFiles($this->showInStream);
         }
     }
+
+    /**
+     * Checks whether the file should be highlighed in the results or not.
+     * 
+     * @param File $file
+     * @return boolean is highlighed
+     */
+    protected function isHighlighed(File $file)
+    {
+        if (Yii::$app->controller instanceof SearchController) {
+            if (SearchController::$keyword !== null) {
+                $converter = new TextConverter();
+                if ($converter->applyFile($file) &&
+                        SearchHelper::matchQuery(SearchController::$keyword, $converter->getContentAsText())) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
 }

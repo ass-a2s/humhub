@@ -10,10 +10,10 @@ namespace humhub\modules\activity\models;
 
 use Yii;
 use yii\base\Exception;
+use yii\db\ActiveRecord;
 use humhub\modules\content\components\ContentActiveRecord;
 use humhub\modules\activity\components\ActivityWebRenderer;
 use humhub\components\behaviors\PolymorphicRelation;
-use yii\db\ActiveRecord;
 
 /**
  * This is the model class for table "activity".
@@ -22,6 +22,9 @@ use yii\db\ActiveRecord;
  * @property string $class
  * @property string $module
  * @property string $object_model
+ * @property integer $object_id
+ *
+ * @mixin PolymorphicRelation
  */
 class Activity extends ContentActiveRecord
 {
@@ -53,9 +56,10 @@ class Activity extends ContentActiveRecord
     {
         return [
             [
-                'class' => PolymorphicRelation::className(),
+                'class' => PolymorphicRelation::class,
+                'strict' => true,
                 'mustBeInstanceOf' => [
-                    ActiveRecord::className(),
+                    ActiveRecord::class,
                 ]
             ]
         ];
@@ -127,6 +131,7 @@ class Activity extends ContentActiveRecord
      *
      * @see \humhub\modules\activity\components\BaseActivity::$source
      * @return mixed
+     * @throws \yii\db\IntegrityException
      */
     public function getSource()
     {

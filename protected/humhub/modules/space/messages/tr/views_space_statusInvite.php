@@ -17,7 +17,5 @@
  * NOTE: this file must be saved in UTF-8 encoding.
  */
 return [
-    'User has become a member.' => 'Kullanıcı üye yapılmıştır.',
-    'User has been invited.' => 'Kullanıcı davet edildi.',
-    'User has not been invited.' => 'Kullanıcı davet edilmemiştir.',
+    'Users has been invited.' => '',
 ];

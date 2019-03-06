@@ -8,9 +8,12 @@
 
 namespace humhub\modules\user\models;
 
-use Yii;
 use humhub\components\ActiveRecord;
+use humhub\modules\admin\notifications\IncludeGroupNotification;
+use humhub\modules\directory\widgets\GroupUsers;
 use humhub\modules\space\models\Space;
+use humhub\modules\user\components\ActiveQueryUser;
+use Yii;
 
 /**
  * This is the model class for table "group".
@@ -26,6 +29,12 @@ use humhub\modules\space\models\Space;
  * @property integer $show_at_registration
  * @property string $updated_at
  * @property integer $updated_by
+ * @property integer $is_admin_group
+ *
+ * @property User[] $manager
+ * @property Space|null $defaultSpace
+ * @property Space|null $space
+ * @property GroupUsers[] groupUsers
  */
 class Group extends ActiveRecord
 {
@@ -48,7 +57,7 @@ class Group extends ActiveRecord
         return [
             [['space_id', 'sort_order'], 'integer'],
             [['description'], 'string'],
-            [['name'], 'string', 'max' => 45]
+            [['name'], 'string', 'max' => 45],
         ];
     }
 
@@ -74,6 +83,9 @@ class Group extends ActiveRecord
         ];
     }
 
+    /**
+     * @return null|Space
+     */
     public function getDefaultSpace()
     {
         return Space::findOne(['id' => $this->space_id]);
@@ -90,7 +102,7 @@ class Group extends ActiveRecord
 
     /**
      * Returns the admin group.
-     * @return type
+     * @return Group
      */
     public static function getAdminGroup()
     {
@@ -109,14 +121,14 @@ class Group extends ActiveRecord
 
     /**
      * Returns all user which are defined as manager in this group as ActiveQuery.
-     * @return ActiveQuery
+     * @return \yii\db\ActiveQuery
      */
     public function getManager()
     {
-        return $this->hasMany(User::className(), ['id' => 'user_id'])
-                        ->via('groupUsers', function($query) {
-                            $query->where(['is_group_manager' => '1']);
-                        });
+        return $this->hasMany(User::class, ['id' => 'user_id'])
+            ->via('groupUsers', function ($query) {
+                $query->where(['is_group_manager' => '1']);
+            });
     }
 
     /**
@@ -130,7 +142,9 @@ class Group extends ActiveRecord
 
     /**
      * Returns the GroupUser relation for a given user.
-     * @return boolean
+     * @param User|string $user
+     *
+     * @return GroupUser|null
      */
     public function getGroupUser($user)
     {
@@ -140,26 +154,27 @@ class Group extends ActiveRecord
 
     /**
      * Returns all GroupUser relations for this group as ActiveQuery.
-     * @return ActiveQuery
+     * @return \yii\db\ActiveQuery
      */
     public function getGroupUsers()
     {
-        return $this->hasMany(GroupUser::className(), ['group_id' => 'id']);
+        return $this->hasMany(GroupUser::class, ['group_id' => 'id']);
     }
 
     /**
      * Returns all member user of this group as ActiveQuery
      *
-     * @return ActiveQuery
+     * @return ActiveQueryUser
      */
     public function getUsers()
     {
         $query = User::find();
         $query->leftJoin('group_user', 'group_user.user_id=user.id AND group_user.group_id=:groupId', [
-            ':groupId' => $this->id
+            ':groupId' => $this->id,
         ]);
         $query->andWhere(['IS NOT', 'group_user.id', new \yii\db\Expression('NULL')]);
         $query->multiple = true;
+
         return $query;
     }
 
@@ -172,22 +187,31 @@ class Group extends ActiveRecord
         return $this->getUsers()->count() > 0;
     }
 
+    /**
+     * @param $user
+     * @return bool
+     */
     public function isManager($user)
     {
         $userId = ($user instanceof User) ? $user->id : $user;
         return $this->getGroupUsers()->where(['user_id' => $userId, 'is_group_manager' => true])->count() > 0;
     }
 
+    /**
+     * @param $user
+     * @return bool
+     */
     public function isMember($user)
     {
         return $this->getGroupUser($user) != null;
     }
 
     /**
-     * Adds a user to the group. This function will skip if the user is already
-     * a member of the group.
+     * Adds a user to the group. This function will skip if the user is already a member of the group.
+     *
      * @param User $user user id or user model
-     * @param type $isManager
+     * @param bool $isManager mark as group manager
+     * @throws \yii\base\InvalidConfigException
      */
     public function addUser($user, $isManager = false)
     {
@@ -203,24 +227,39 @@ class Group extends ActiveRecord
         $newGroupUser->created_at = new \yii\db\Expression('NOW()');
         $newGroupUser->created_by = Yii::$app->user->id;
         $newGroupUser->is_group_manager = $isManager;
-        $newGroupUser->save();
+        if ($newGroupUser->save() && !Yii::$app->user->isGuest) {
+            IncludeGroupNotification::instance()
+                ->about($this)
+                ->from(Yii::$app->user->identity)
+                ->send(User::findOne(['id' => $userId]));
+        }
     }
 
     /**
      * Removes a user from the group.
-     * @param type $user userId or user model
+     * @param User|string $user userId or user model
+     * @return bool
      */
     public function removeUser($user)
     {
         $groupUser = $this->getGroupUser($user);
-        if ($groupUser != null) {
-            $groupUser->delete();
+        if ($groupUser === null) {
+            return false;
         }
+
+        if ($groupUser !== false) {
+            return $groupUser->delete();
+        }
+
+        return false;
     }
 
+    /**
+     * @return \yii\db\ActiveQuery
+     */
     public function getSpace()
     {
-        return $this->hasOne(Space::className(), ['id' => 'space_id']);
+        return $this->hasOne(Space::class, ['id' => 'space_id']);
     }
 
     /**
@@ -228,11 +267,14 @@ class Group extends ActiveRecord
      * This should be done after a new user is created and approval is required.
      *
      * @todo Create message template, move message into translation
+     * @param User $user
+     * @return true|void
      */
     public static function notifyAdminsForUserApproval($user)
     {
         // No admin approval required
-        if ($user->status != User::STATUS_NEED_APPROVAL || !Yii::$app->getModule('user')->settings->get('auth.needApproval', 'user')) {
+        if ($user->status != User::STATUS_NEED_APPROVAL ||
+            !Yii::$app->getModule('user')->settings->get('auth.needApproval', 'user')) {
             return;
         }
 
@@ -247,10 +289,13 @@ class Group extends ActiveRecord
 
             Yii::$app->i18n->setUserLocale($manager);
 
-            $html = Yii::t('UserModule.adminUserApprovalMail', 'Hello {displayName},', ['displayName' => $manager->displayName]) . "<br><br>\n\n" .
-                    Yii::t('UserModule.adminUserApprovalMail', 'a new user {displayName} needs approval.', ['displayName' => $user->displayName]) . "<br><br>\n\n" .
-                    Yii::t('UserModule.adminUserApprovalMail', 'Please click on the link below to view request:') . "<br>\n\n" .
-                    \yii\helpers\Html::a($approvalUrl, $approvalUrl) . "<br/> <br/>\n";
+            $html = Yii::t('UserModule.adminUserApprovalMail', 'Hello {displayName},',
+                    ['displayName' => $manager->displayName]) . "<br><br>\n\n" .
+                Yii::t('UserModule.adminUserApprovalMail', 'a new user {displayName} needs approval.',
+                    ['displayName' => $user->displayName]) . "<br><br>\n\n" .
+                Yii::t('UserModule.adminUserApprovalMail', 'Please click on the link below to view request:') .
+                "<br>\n\n" .
+                \yii\helpers\Html::a($approvalUrl, $approvalUrl) . "<br/> <br/>\n";
 
             $mail = Yii::$app->mailer->compose(['html' => '@humhub/views/mail/TextOnly'], [
                 'message' => $html,
@@ -289,9 +334,15 @@ class Group extends ActiveRecord
         return $groups;
     }
 
+    /**
+     * @return array|\yii\db\ActiveRecord[]
+     */
     public static function getDirectoryGroups()
     {
-        return self::find()->where(['show_at_directory' => '1'])->orderBy(['sort_order' => SORT_ASC, 'name' => SORT_ASC])->all();
+        return self::find()->where(['show_at_directory' => '1'])->orderBy([
+            'sort_order' => SORT_ASC,
+            'name' => SORT_ASC,
+        ])->all();
     }
 
 }

@@ -1,13 +1,9 @@
 <?php
 return array (
-  'Actions' => '',
-  'Add new user' => '',
-  'Group Manager' => '',
-  'Last login' => '',
-  'Overview' => 'Tartalomjegyzék',
+  'Actions' => 'Tevékenység',
+  'Add new user' => 'Új felhasználó hozzáadása',
+  'Overview' => 'Áttekintés',
   'Send invite' => 'Meghívás',
   'Settings' => 'Beállítások',
-  'This overview contains a list of each registered user with actions to view, edit and delete users.' => '',
-  'Users' => '',
-  'never' => '',
+  'Users' => 'Felhasználók',
 );

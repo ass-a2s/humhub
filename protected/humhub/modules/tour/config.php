@@ -5,10 +5,10 @@ use humhub\modules\tour\Module;
 
 return [
     'id' => 'tour',
-    'class' => Module::className(),
+    'class' => Module::class,
     'isCoreModule' => true,
-    'events' => array(
-        array('class' => Sidebar::className(), 'event' => Sidebar::EVENT_INIT, 'callback' => array(Module::className(), 'onDashboardSidebarInit')),
-    ),
+    'events' => [
+        ['class' => Sidebar::class, 'event' => Sidebar::EVENT_INIT, 'callback' => [Module::class, 'onDashboardSidebarInit']],
+    ],
 ];
 ?>

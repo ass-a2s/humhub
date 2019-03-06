@@ -17,7 +17,5 @@
  * NOTE: this file must be saved in UTF-8 encoding.
  */
 return [
-    'User has become a member.' => '',
-    'User has been invited.' => '',
-    'User has not been invited.' => '',
+    'Users has been invited.' => '',
 ];

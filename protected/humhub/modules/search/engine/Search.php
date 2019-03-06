@@ -9,9 +9,12 @@
 namespace humhub\modules\search\engine;
 
 use Yii;
+use yii\base\Component;
 use humhub\modules\search\interfaces\Searchable;
 use humhub\modules\content\models\Content;
+use humhub\modules\content\models\ContentTag;
 use humhub\modules\content\components\ContentActiveRecord;
+use humhub\modules\content\components\ContentContainerActiveRecord;
 use humhub\modules\user\models\User;
 use humhub\modules\space\models\Space;
 use humhub\modules\search\events\SearchAttributesEvent;
@@ -22,7 +25,7 @@ use humhub\modules\search\events\SearchAttributesEvent;
  * @since 0.12
  * @author luke
  */
-abstract class Search extends \yii\base\Component
+abstract class Search extends Component
 {
 
     const EVENT_SEARCH_ATTRIBUTES = 'search_attributes';
@@ -106,12 +109,12 @@ abstract class Search extends \yii\base\Component
 
     protected function getMetaInfoArray(Searchable $obj)
     {
-        $meta = array();
+        $meta = [];
         $meta['type'] = $this->getDocumentType($obj);
         $meta['pk'] = $obj->getPrimaryKey();
         $meta['model'] = $obj->className();
 
-        if ($obj instanceof \humhub\modules\content\components\ContentContainerActiveRecord) {
+        if ($obj instanceof ContentContainerActiveRecord) {
             $meta['containerModel'] = $obj->className();
             $meta['containerPk'] = $obj->id;
         }
@@ -127,6 +130,11 @@ abstract class Search extends \yii\base\Component
             } else {
                 $meta['visibility'] = self::DOCUMENT_VISIBILITY_PRIVATE;
             }
+
+            $meta['contentTags'] = implode(', ', array_map(function(ContentTag $tag) {
+                return $tag->name;
+            }, $obj->content->tags));
+
         } elseif ($meta['type'] == self::DOCUMENT_TYPE_SPACE && $obj->visibility == Space::VISIBILITY_NONE) {
             $meta['visibility'] = self::DOCUMENT_VISIBILITY_PRIVATE;
         } else {
@@ -151,18 +159,20 @@ abstract class Search extends \yii\base\Component
 
     protected function setDefaultFindOptions($options)
     {
-        if (!isset($options['page']) || $options['page'] == "")
+        if (!isset($options['page']) || $options['page'] == '') {
             $options['page'] = 1;
+        }
 
-        if (!isset($options['pageSize']) || $options['pageSize'] == "")
+        if (!isset($options['pageSize']) || $options['pageSize'] == '') {
             $options['pageSize'] = Yii::$app->settings->get('paginationSize');
+        }
 
         if (!isset($options['checkPermissions'])) {
             $options['checkPermissions'] = true;
         }
 
         if (!isset($options['limitSpaces'])) {
-            $options['limitSpaces'] = array();
+            $options['limitSpaces'] = [];
         }
 
         return $options;
@@ -179,6 +189,7 @@ abstract class Search extends \yii\base\Component
     {
         $additionalAttributes = [];
         $this->trigger(self::EVENT_SEARCH_ATTRIBUTES, new SearchAttributesEvent($additionalAttributes, $object));
+
         return $additionalAttributes;
     }
 

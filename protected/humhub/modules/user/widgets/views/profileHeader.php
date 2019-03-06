@@ -1,8 +1,9 @@
 <?php
 
+use humhub\modules\user\controllers\ImageController;
+use humhub\modules\user\widgets\ProfileHeaderCounterSet;
 use yii\helpers\Html;
 use yii\helpers\Url;
-use humhub\modules\user\controllers\ImageController;
 
 if ($allowModifyProfileBanner || $allowModifyProfileImage) {
     $this->registerJsFile('@web-static/resources/user/profileHeaderImageUpload.js');
@@ -18,7 +19,8 @@ if ($allowModifyProfileBanner || $allowModifyProfileImage) {
 
         <div class="image-upload-container" style="width: 100%; height: 100%; overflow:hidden;">
             <!-- profile image output-->
-            <img class="img-profile-header-background" id="user-banner-image" alt="<?= Yii::t('base', 'Profile image of {displayName}', ['displayName' => Html::encode($user->displayName)]); ?>"
+            <img class="img-profile-header-background" id="user-banner-image"
+                 alt="<?= Yii::t('base', 'Profile image of {displayName}', ['displayName' => Html::encode($user->displayName)]); ?>"
                  src="<?= $user->getProfileBannerImage()->getUrl(); ?>"
                  width="100%" style="width: 100%; max-height: 192px;">
 
@@ -62,13 +64,15 @@ if ($allowModifyProfileBanner || $allowModifyProfileImage) {
             <!-- check if the current user is the profile owner and can change the images -->
             <?php if ($allowModifyProfileBanner): ?>
                 <div class="image-upload-buttons" id="banner-image-upload-buttons">
-                    <a href="#" onclick="javascript:$('#bannerfileupload input').click();" class="btn btn-info btn-sm" aria-label="<?= Yii::t('UserModule.base', 'Upload profile banner'); ?>">
+                    <a href="#" onclick="javascript:$('#bannerfileupload input').click();" class="btn btn-info btn-sm"
+                       aria-label="<?= Yii::t('UserModule.base', 'Upload profile banner'); ?>">
                         <i class="fa fa-cloud-upload"></i>
                     </a>
                     <a id="banner-image-upload-edit-button"
                        style="<?= (!$user->getProfileBannerImage()->hasImage()) ? 'display: none;' : '' ?>"
                        href="<?= Url::to(['/user/image/crop', 'userGuid' => $user->guid, 'type' => ImageController::TYPE_PROFILE_BANNER_IMAGE]); ?>"
-                       class="btn btn-info btn-sm" data-target="#globalModal" data-backdrop="static" aria-label="<?= Yii::t('UserModule.base', 'Crop profile background'); ?>">
+                       class="btn btn-info btn-sm" data-target="#globalModal" data-backdrop="static"
+                       aria-label="<?= Yii::t('UserModule.base', 'Crop profile background'); ?>">
                         <i class="fa fa-edit"></i>
                     </a>
                     <?php
@@ -94,7 +98,7 @@ if ($allowModifyProfileBanner || $allowModifyProfileImage) {
         <div class="image-upload-container profile-user-photo-container" style="width: 140px; height: 140px;">
 
             <?php if ($user->profileImage->hasImage()) : ?>
-                <a data-ui-gallery="profileHeader"  href="<?= $user->profileImage->getUrl('_org'); ?>">
+                <a data-ui-gallery="profileHeader" href="<?= $user->profileImage->getUrl('_org'); ?>">
                     <img class="img-rounded profile-user-photo" id="user-profile-image"
                          src="<?php echo $user->getProfileImage()->getUrl(); ?>"
                          data-src="holder.js/140x140" alt="140x140" style="width: 140px; height: 140px;"/>
@@ -103,7 +107,7 @@ if ($allowModifyProfileBanner || $allowModifyProfileImage) {
                 <img class="img-rounded profile-user-photo" id="user-profile-image"
                      src="<?php echo $user->getProfileImage()->getUrl(); ?>"
                      data-src="holder.js/140x140" alt="140x140" style="width: 140px; height: 140px;"/>
-                 <?php endif; ?>
+            <?php endif; ?>
 
             <!-- check if the current user is the profile owner and can change the images -->
             <?php if ($allowModifyProfileImage) : ?>
@@ -122,7 +126,8 @@ if ($allowModifyProfileBanner || $allowModifyProfileImage) {
                 </div>
 
                 <div class="image-upload-buttons" id="profile-image-upload-buttons">
-                    <a href="#" onclick="javascript:$('#profilefileupload input').click();" class="btn btn-info btn-sm" aria-label="<?= Yii::t('UserModule.base', 'Upload profile image'); ?>">
+                    <a href="#" onclick="javascript:$('#profilefileupload input').click();" class="btn btn-info btn-sm"
+                       aria-label="<?= Yii::t('UserModule.base', 'Upload profile image'); ?>">
                         <i class="fa fa-cloud-upload"></i>
                     </a>
                     <a id="profile-image-upload-edit-button"
@@ -132,10 +137,11 @@ if ($allowModifyProfileBanner || $allowModifyProfileImage) {
                        }
                        ?>"
                        href="<?php echo Url::to(['/user/image/crop', 'userGuid' => $user->guid, 'type' => ImageController::TYPE_PROFILE_IMAGE]); ?>"
-                       class="btn btn-info btn-sm" data-target="#globalModal" data-backdrop="static" aria-label="<?= Yii::t('UserModule.base', 'Crop profile image'); ?>">
+                       class="btn btn-info btn-sm" data-target="#globalModal" data-backdrop="static"
+                       aria-label="<?= Yii::t('UserModule.base', 'Crop profile image'); ?>">
                         <i class="fa fa-edit"></i></a>
                     <?php
-                    echo \humhub\widgets\ModalConfirm::widget(array(
+                    echo \humhub\widgets\ModalConfirm::widget([
                         'uniqueID' => 'modal_profileimagedelete',
                         'linkOutput' => 'a',
                         'ariaLabel' => Yii::t('UserModule.base', 'Delete profile image'),
@@ -148,7 +154,7 @@ if ($allowModifyProfileBanner || $allowModifyProfileImage) {
                         'style' => $user->getProfileImage()->hasImage() ? '' : 'display: none;',
                         'linkHref' => Url::to(["/user/image/delete", 'type' => ImageController::TYPE_PROFILE_IMAGE, 'userGuid' => $user->guid]),
                         'confirmJS' => 'function(jsonResp) { resetProfileImage(jsonResp); }'
-                    ));
+                    ]);
                     ?>
                 </div>
             <?php endif; ?>
@@ -161,53 +167,18 @@ if ($allowModifyProfileBanner || $allowModifyProfileImage) {
     <div class="panel-body">
 
         <div class="panel-profile-controls">
-            <!-- start: User statistics -->
             <div class="row">
                 <div class="col-md-12">
-                    <div class="statistics pull-left">
-
-                        <?php if ($friendshipsEnabled): ?>
-                            <a href="<?= Url::to(['/friendship/list/popup', 'userId' => $user->id]); ?>" data-target="#globalModal">
-                                <div class="pull-left entry">
-                                    <span class="count"><?= $countFriends; ?></span>
-                                    <br>
-                                    <span class="title"><?= Yii::t('UserModule.widgets_views_profileHeader', 'Friends'); ?></span>
-                                </div>
-                            </a>
-                        <?php endif; ?>
-                        <?php if ($followingEnabled): ?>
-                            <a href="<?= $user->createUrl('/user/profile/follower-list'); ?>" data-target="#globalModal">
-                                <div class="pull-left entry">
-                                    <span class="count"><?= $countFollowers; ?></span>
-                                    <br>
-                                    <span class="title"><?= Yii::t('UserModule.widgets_views_profileHeader', 'Followers'); ?></span>
-                                </div>
-                            </a>
-                            <a href="<?= $user->createUrl('/user/profile/followed-users-list'); ?>" data-target="#globalModal">
-                                <div class="pull-left entry">
-                                    <span class="count"><?= $countFollowing; ?></span>
-                                    <br>
-                                    <span class="title"><?= Yii::t('UserModule.widgets_views_profileHeader', 'Following'); ?></span>
-                                </div>
-                            </a>
-                        <?php endif; ?>
-                        <a href="<?= $user->createUrl('/user/profile/space-membership-list'); ?>" data-target="#globalModal">
-                            <div class="pull-left entry">
-                                <span class="count"><?= $countSpaces; ?></span><br>
-                                <span class="title"><?= Yii::t('UserModule.widgets_views_profileHeader', 'Spaces'); ?></span>
-                            </div>
-                        </a>
-                    </div>
-                    <!-- end: User statistics -->
+                    <?= ProfileHeaderCounterSet::widget(['user' => $user]); ?>
 
                     <div class="controls controls-header pull-right">
                         <?=
                         humhub\modules\user\widgets\ProfileHeaderControls::widget([
                             'user' => $user,
                             'widgets' => [
-                                [\humhub\modules\user\widgets\ProfileEditButton::className(), ['user' => $user], []],
-                                [\humhub\modules\user\widgets\UserFollowButton::className(), ['user' => $user], []],
-                                [\humhub\modules\friendship\widgets\FriendshipButton::className(), ['user' => $user], []],
+                                [\humhub\modules\user\widgets\ProfileEditButton::class, ['user' => $user], []],
+                                [\humhub\modules\user\widgets\UserFollowButton::class, ['user' => $user], []],
+                                [\humhub\modules\friendship\widgets\FriendshipButton::class, ['user' => $user], []],
                             ]
                         ]);
                         ?>

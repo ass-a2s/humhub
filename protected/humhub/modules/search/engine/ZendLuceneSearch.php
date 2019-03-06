@@ -8,6 +8,7 @@
 
 namespace humhub\modules\search\engine;
 
+use humhub\modules\search\commands\SearchController;
 use humhub\modules\search\interfaces\Searchable;
 use humhub\modules\search\libs\SearchResult;
 use humhub\modules\search\libs\SearchResultSet;
@@ -75,8 +76,18 @@ class ZendLuceneSearch extends Search
 
         // Add Meta Data fields
         foreach ($this->getMetaInfoArray($obj) as $fieldName => $fieldValue) {
-            $doc->addField(Field::keyword($fieldName, $fieldValue));
+
+            if ($fieldName === 'contentTags') {
+                // ContentTags needs to be tokenized
+                // TODO: Find better approch for meta info field types
+                $doc->addField(Field::Text($fieldName, $fieldValue));
+            } else {
+                $doc->addField(Field::keyword($fieldName, $fieldValue));
+            }
         }
+
+
+
 
         // Add provided search infos
         foreach ($attributes as $key => $val) {
@@ -93,12 +104,16 @@ class ZendLuceneSearch extends Search
             }
         }
 
-        if (Yii::$app->request->isConsoleRequest) {
-            print '.';
+        if (Yii::$app->request->isConsoleRequest && Yii::$app->controller instanceof SearchController) {
+            print ".";
         }
 
-        $index->addDocument($doc);
-        $index->commit();
+        try {
+            $index->addDocument($doc);
+            $index->commit();
+        } catch (RuntimeException $e) {
+            Yii::error('Could not add document to search index. Error: '. $e->getMessage(), 'search');
+        }
     }
 
     public function update(Searchable $object)
@@ -117,10 +132,18 @@ class ZendLuceneSearch extends Search
 
         $hits = $index->find($query);
         foreach ($hits as $hit) {
-            $index->delete($hit->id);
+            try {
+                $index->delete($hit->id);
+            } catch (RuntimeException $e) {
+                Yii::error('Could not delete document from search index. Error: '. $e->getMessage(), 'search');
+            }
         }
 
-        $index->commit();
+        try {
+            $index->commit();
+        } catch (RuntimeException $e) {
+            Yii::error('Could not commit search index. Error: '. $e->getMessage(), 'search');
+        }
     }
 
     public function flush()
@@ -129,7 +152,7 @@ class ZendLuceneSearch extends Search
         foreach (new \DirectoryIterator($indexPath) as $fileInfo) {
             if ($fileInfo->isDot())
                 continue;
-            unlink($indexPath . DIRECTORY_SEPARATOR . $fileInfo->getFilename());
+            FileHelper::unlink($indexPath . DIRECTORY_SEPARATOR . $fileInfo->getFilename());
         }
 
         $this->index = null;
@@ -140,7 +163,7 @@ class ZendLuceneSearch extends Search
         $options = $this->setDefaultFindOptions($options);
 
         $index = $this->getIndex();
-        $keyword = str_replace(['*', '?', '_', '$', '-', '.'], ' ', mb_strtolower($keyword, 'utf-8'));
+        $keyword = str_replace(['*', '?', '_', '$', '-', '.', '\'', '+', '&&' ,'||' ,'!' ,'(', ')','{', '}', '[', ']', '^', '"', '~', ':', '\\'], ' ', mb_strtolower($keyword, 'utf-8'));
 
         $query = $this->buildQuery($keyword, $options);
         if ($query === null) {
@@ -175,7 +198,7 @@ class ZendLuceneSearch extends Search
 
     /**
      * Returns the lucence search query
-     * 
+     *
      * @param string $keyword
      * @param array $options
      * @return \ZendSearch\Lucene\Search\Query\AbstractQuery
@@ -250,7 +273,7 @@ class ZendLuceneSearch extends Search
                 $guestContentQuery = new Boolean();
                 $guestContentQuery->addSubquery(new QueryTerm(new Term(self::DOCUMENT_VISIBILITY_PUBLIC, 'visibility')), true);
                 $guestContentQuery->addSubquery(new QueryTerm(new Term(self::DOCUMENT_TYPE_CONTENT, 'type')), true);
-                $guestContentQuery->addSubquery(new QueryTerm(new Term(Space::className(), 'containerModel')), true);
+                $guestContentQuery->addSubquery(new QueryTerm(new Term(Space::class, 'containerModel')), true);
                 $guestSpaceListQuery = new MultiTerm();
                 foreach (Space::find()->where(['visibility' => Space::VISIBILITY_ALL])->all() as $space) {
                     $guestSpaceListQuery->addTerm(new Term($space->id, 'containerPk'));
@@ -272,7 +295,7 @@ class ZendLuceneSearch extends Search
                 //--- Private Space Content
                 $privateSpaceContentQuery = new Boolean();
                 $privateSpaceContentQuery->addSubquery(new QueryTerm(new Term(self::DOCUMENT_VISIBILITY_PRIVATE, 'visibility')), true);
-                $privateSpaceContentQuery->addSubquery(new QueryTerm(new Term(Space::className(), 'containerModel')), true);
+                $privateSpaceContentQuery->addSubquery(new QueryTerm(new Term(Space::class, 'containerModel')), true);
                 $privateSpacesListQuery = new MultiTerm();
 
                 foreach (Membership::getUserSpaceIds() as $spaceId) {
@@ -288,7 +311,7 @@ class ZendLuceneSearch extends Search
         if (count($options['limitSpaces']) > 0) {
 
             $spaceBaseQuery = new Boolean();
-            $spaceBaseQuery->addSubquery(new QueryTerm(new Term(Space::className(), 'containerModel')), true);
+            $spaceBaseQuery->addSubquery(new QueryTerm(new Term(Space::class, 'containerModel')), true);
             $spaceIdQuery = new MultiTerm();
             foreach ($options['limitSpaces'] as $space) {
                 $spaceIdQuery->addTerm(new Term($space->id, 'containerPk'));

@@ -8,8 +8,8 @@
 
 namespace humhub\modules\content\components;
 
-
 use humhub\components\Module;
+use humhub\modules\content\models\ContentContainerModuleState;
 
 /**
  * Base Module with ContentContainer support.
@@ -22,6 +22,25 @@ use humhub\components\Module;
  */
 class ContentContainerModule extends Module
 {
+
+    /**
+     * @inheritdoc
+     */
+    public function disable()
+    {
+        // disable in content containers
+        $contentContainerQuery = ContentContainerModuleManager::getContentContainerQueryByModule($this->id);
+        foreach ($contentContainerQuery->all() as $contentContainer) {
+            /* @var $contentContainer \humhub\modules\content\models\ContentContainer */
+            $this->disableContentContainer($contentContainer->getPolymorphicRelation());
+        }
+
+        foreach (ContentContainerModuleState::findAll(['module_id' => $this->id]) as $moduleState) {
+            $moduleState->delete();
+        }
+
+        parent::disable();
+    }
 
     /**
      * Returns the list of valid content container classes this module supports.
@@ -140,6 +159,60 @@ class ContentContainerModule extends Module
      * @return array of content container instances
      */
     public function getEnabledContentContainers($containerClass = "")
+    {
+        return [];
+    }
+
+    /**
+     * This function enhances the default [[Module::getPermissions()]] behaviour by automatically checking
+     * the installation state of this module on the provided [[ContentContainerActiveRecord]].
+     *
+     * In case a container object was provided which this module is installed on we forward the call to [[getContainerPermissions()]].
+     * If a container is given which this module is not installed on we return an empty array.
+     * If no container was provided we forward the call to [[getGlobalPermissions()]].
+     *
+     * Sub classes should overwrite [[getContainerPermissions()]] and/or [[getGlobalPermissions()]] unless a special
+     * permission behaviour is required.
+     *
+     * @param ContentContainerActiveRecord $contentContainer
+     * @see Module::getPermissions()
+     * @return array
+     * @since 1.3.11
+     */
+    public function getPermissions($contentContainer = null)
+    {
+        if($contentContainer && $contentContainer->moduleManager->isEnabled($this->id)) {
+            return $this->getContainerPermissions($contentContainer);
+        }
+
+        if($contentContainer) {
+            return parent::getPermissions($contentContainer);
+        }
+
+        return $this->getGlobalPermissions();
+    }
+
+    /**
+     * This method is called to determine available permissions only for containers this module is enabled on.
+     *
+     * @param null $contentContainer
+     * @see ContentContainerModule::getPermissions()
+     * @return array
+     * @since 1.3.11
+     */
+    protected  function getContainerPermissions($contentContainer = null)
+    {
+        return [];
+    }
+
+    /**
+     * This method is called to determine only global (no container related) permissions of this module.
+     *
+     * @see ContentContainerModule::getPermissions()
+     * @return array
+     * @since 1.3.11
+     */
+    protected  function getGlobalPermissions()
     {
         return [];
     }

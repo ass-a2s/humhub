@@ -8,8 +8,10 @@
 
 namespace humhub\modules\admin\commands;
 
-use Yii;
+use humhub\components\Module;
 use humhub\modules\admin\libs\OnlineModuleManager;
+use Yii;
+use yii\helpers\Console;
 
 /**
  * HumHub Module Managament
@@ -133,8 +135,6 @@ class ModuleController extends \yii\console\Controller
 
     /**
      * Updates all modules to the latest available version.
-     *
-     * @param array $args
      */
     public function actionUpdateAll()
     {
@@ -144,9 +144,9 @@ class ModuleController extends \yii\console\Controller
         foreach ($installedModules as $moduleId => $className) {
             try {
                 $this->actionUpdate($moduleId);
-            } catch (\yii\base\InvalidParamException $ex) {
+            } catch (\yii\base\InvalidArgumentException $ex) {
                 print "Module " . $moduleId . " - Error: " . $ex->getMessage() . "\n";
-            } catch (Exception $ex) {
+            } catch (\Exception $ex) {
                 print "Module " . $moduleId . " - Error: " . $ex->getMessage() . "\n";
             }
         }
@@ -163,11 +163,57 @@ class ModuleController extends \yii\console\Controller
                     $onlineModules = new OnlineModuleManager();
                     $onlineModules->install($moduleId);
                     print "Reinstalled: " . $moduleId . "\n";
-                } catch (Exception $ex) {
+                } catch (\Exception $ex) {
 
                 }
             }
         }
+    }
+
+    /**
+     * Enables an installed module
+     *
+     * @param string $moduleId the module id
+     * @return int the exit code
+     */
+    public function actionEnable($moduleId)
+    {
+        $this->stdout(Yii::t('AdminModule.console', "--- Enable module: {moduleId} ---\n\n", ['moduleId' => $moduleId]), Console::BOLD);
+
+        /** @var Module $module */
+        $module = Yii::$app->moduleManager->getModule($moduleId);
+        if ($module === null) {
+            $this->stdout(Yii::t('AdminModule.console', "Module not found!\n"), Console::FG_RED, Console::BOLD);
+            return 1;
+        }
+
+        $module->enable();
+
+        $this->stdout(Yii::t('AdminModule.console', "\nModule successfully enabled!\n"), Console::FG_GREEN, Console::BOLD);
+        return 0;
+    }
+
+    /**
+     * Disables an enabled module
+     *
+     * @param string $moduleId the module id
+     * @return int the exit code
+     */
+    public function actionDisable($moduleId)
+    {
+        $this->stdout(Yii::t('AdminModule.console', "--- Disable module: {moduleId} ---\n\n", ['moduleId' => $moduleId]), Console::BOLD);
+
+        /** @var Module $module */
+        $module = Yii::$app->moduleManager->getModule($moduleId);
+        if ($module === null || !Yii::$app->hasModule($moduleId)) {
+            $this->stdout(Yii::t('AdminModule.console', "Module not found or activated!\n"), Console::FG_RED, Console::BOLD);
+            return 1;
+        }
+
+        $module->disable();
+
+        $this->stdout(Yii::t('AdminModule.console', "\nModule successfully disabled!\n"), Console::FG_GREEN, Console::BOLD);
+        return 0;
     }
 
 }

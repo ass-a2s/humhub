@@ -2,7 +2,7 @@
 return array (
   '<b>Nobody wrote something yet.</b><br>Make the beginning and post something...' => '<b>Er heeft nog niemand een bericht geschreven.</b><br>Wees de eerste en laat een bericht achter...',
   '<b>There are no profile posts yet!</b>' => '<b>Er zijn nog geen profiel berichten!</b>',
-  '<strong>Directory</strong> menu' => '<strong>Overzicht</strong> menu',
+  '<strong>Directory</strong> menu' => '<strong>Mapmenu</strong>',
   '<strong>Group</strong> members - {group}' => '<strong>Groep</strong> leden - {group}',
   '<strong>Group</strong> stats' => '<strong>Groep</strong> statistieken',
   '<strong>Member</strong> Group Directory' => '<strong>Leden</strong> groep overzicht',
@@ -12,7 +12,9 @@ return array (
   '<strong>New</strong> spaces' => '<strong>Nieuwe</strong> ruimtes',
   '<strong>Space</strong> directory' => '<strong>Ruimte</strong> overzicht',
   '<strong>Space</strong> stats' => '<strong>Ruimte</strong> statistieken',
+  'Access directory' => 'Toegang tot map',
   'Average members' => 'Gemiddeld aantal leden',
+  'Can access the directory section.' => 'Heeft toegang tot de mappen.',
   'Directory' => 'Overzicht',
   'Follows somebody' => 'Volgt iemand',
   'Groups' => 'Groepen',

@@ -4,41 +4,51 @@ Developement Guide
 Getting Started
 ---------------
 * [Overview](overview.md)
-* [Git Installation](git-installation.md)
 * [Development Environment](environment.md)
 * [Coding Standards](coding-standards.md)
 
-Module Development
+Module Developement
+---------------
+* [Introduction](modules.md)
+* [Life Cycle](modules-lifecycle.md)
+* [Structure](modules-structure.md)
+* [Base Class](modules-base-class.md)
+* [Change core behavior](module-change-behavior.md)
+* [Embedded Themes](embedded-themes.md)
+* [Testing](testing.md)
+* [Migration Guide](modules-migrate.md)
+
+Basic Concepts
 ------------------
-* [Introduction](modules-index.md)
-* [Basic Structure](modules-structure.md)
-* [Migration/Updates](modules-migrate.md)
+* [Database and Models](models.md)
+* [Users](modules-users.md)
 * [Content](content.md)
-* [Events](modules-events.md)
-* [Settings and Configuration](modules-settings.md)
-* [Models / Database](modules-db.md)
-* [Internationalization](modules-i18n.md)
+* [Streams](stream.md)
+* [Events](events.md)
+* [Settings and Configuration](settings.md)
+* [Permissions](permissions.md)
+* [Notifications](notifications.md)
+* [Activities](activities.md)
+* [File Handling](files.md)
+* [Widgets](widgets.md)
+* [Snippets](snippet.md)
+* [Internationalization](i18n.md)
 
 Javascript API
 ------------------
  * [Modules](javascript-index.md)
- * [Components](javascript-components.md)
- * [Additions](javascript-uiadditions.md)
  * [Actions](javascript-actions.md)
+ * [Components and Widgets](javascript-components.md)
+ * [Additions](javascript-uiadditions.md)
  * [Client](javascript-client.md)
- * [Modals](javascript-modals.md)
- * [Events](javascript-events.md)
 
-
-
-Special Topics
+Advanced Topics
 --------------
-* [Notifications](notifications.md)
-* [Activities](activities.md)
 * [Authentication](authentication.md)
+* [Live Updates](live.md)
 * [Search](search.md)
+* [Security](security.md)
+* [HumHub Build](build.md)
 * [Console Application](console.md)
-* [Streams](stream.md)
-* [Permissions](permissions.md)
-* [Widgets](widgets.md)
+
 

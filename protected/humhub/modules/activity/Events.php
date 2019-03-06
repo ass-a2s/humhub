@@ -8,36 +8,43 @@
 
 namespace humhub\modules\activity;
 
-use Yii;
-use yii\base\Object;
 use humhub\modules\activity\components\MailSummary;
 use humhub\modules\activity\jobs\SendMailSummary;
 use humhub\modules\activity\models\Activity;
+use Yii;
+use yii\base\BaseObject;
 use yii\base\Event;
 use yii\db\ActiveRecord;
+use yii\db\IntegrityException;
 
 /**
  * Events provides callbacks to handle events.
  *
  * @author luke
  */
-class Events extends Object
+class Events extends BaseObject
 {
 
     /**
-     * Handles cron run event to send mail summaries to the users
+     * Handles cron hourly run event to send mail summaries to the users
      *
      * @param \yii\base\ActionEvent $event
      */
-    public static function onCronRun($event)
+    public static function onCronHourlyRun($event)
     {
-        if (Yii::$app->controller->action->id == 'hourly') {
-            Yii::$app->queue->push(new SendMailSummary(['interval' => MailSummary::INTERVAL_HOURY]));
-        } elseif (Yii::$app->controller->action->id == 'daily') {
-            Yii::$app->queue->push(new SendMailSummary(['interval' => MailSummary::INTERVAL_DAILY]));
-            if (date('N') == Yii::$app->getModule('activity')->weeklySummaryDay) {
-                Yii::$app->queue->push(new SendMailSummary(['interval' => MailSummary::INTERVAL_WEEKLY]));
-            }
+        Yii::$app->queue->push(new SendMailSummary(['interval' => MailSummary::INTERVAL_HOURLY]));
+    }
+
+    /**
+     * Handles cron daily run event to send mail summaries to the users
+     *
+     * @param \yii\base\ActionEvent $event
+     */
+    public static function onCronDailyRun($event)
+    {
+        Yii::$app->queue->push(new SendMailSummary(['interval' => MailSummary::INTERVAL_DAILY]));
+        if (date('w') == Yii::$app->getModule('activity')->weeklySummaryDay) {
+            Yii::$app->queue->push(new SendMailSummary(['interval' => MailSummary::INTERVAL_WEEKLY]));
         }
     }
 
@@ -60,7 +67,7 @@ class Events extends Object
         if ($pk !== null && !is_array($pk)) {
             $modelsActivity = Activity::find()->where([
                 'object_id' => $pk,
-                'object_model' => $activeRecordModel::className(),
+                'object_model' => $activeRecordModel->className()
             ])->each();
             foreach ($modelsActivity as $activity) {
                 $activity->delete();
@@ -80,11 +87,16 @@ class Events extends Object
 
         // Loop over all comments
         foreach (Activity::find()->each() as $a) {
+            /** @var Activity $a */
 
             // Check for object_model / object_id
-            if ($a->object_model != '' && $a->object_id != '' && $a->getSource() === null) {
-                if ($integrityController->showFix('Deleting activity id ' . $a->id . ' without existing target! (' . $a->object_model . ')')) {
-                    $a->delete();
+            if ($a->object_model != '' && $a->object_id != '') {
+                try {
+                    $source = $a->getSource();
+                } catch (IntegrityException $ex) {
+                    if ($integrityController->showFix('Deleting activity id ' . $a->id . ' without existing target! (' . $a->object_model . ')')) {
+                        $a->delete();
+                    }
                 }
             }
 

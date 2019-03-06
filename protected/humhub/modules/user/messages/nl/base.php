@@ -23,6 +23,7 @@ return array (
   'Missing ID AuthClient Attribute from AuthClient.' => 'Ontbrekend ID AuthClient attribuut van AuthClient.',
   'Modules' => 'Modules',
   'My Account' => 'Mijn account',
+  'Name' => 'Naam',
   'New password' => 'Nieuw wachtwoord',
   'No users found.' => 'Geen gebruikers gevonden.',
   'Notifications' => 'Meldingen',

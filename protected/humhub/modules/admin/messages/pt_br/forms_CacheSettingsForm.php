@@ -6,4 +6,5 @@ return array (
   'File' => 'Arquivo',
   'No caching' => 'Sem cache',
   'PHP APC(u) Extension missing - Type not available!' => 'Extensão PHP APC(u) faltando - Tipo indisponível!',
+  'Redis' => 'Redis',
 );

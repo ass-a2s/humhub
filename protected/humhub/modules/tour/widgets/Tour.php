@@ -48,11 +48,11 @@ class Tour extends \humhub\components\Widget
         if ($currentModuleId == "dashboard" && $currentControllerId == "dashboard") {
             return $this->render('guide_interface');
         } elseif ($currentModuleId == "space" && $currentControllerId == "space") {
-            return $this->render('guide_spaces', array());
+            return $this->render('guide_spaces', []);
         } elseif ($currentModuleId == "user" && $currentControllerId == "profile") {
-            return $this->render('guide_profile', array());
+            return $this->render('guide_profile', []);
         } elseif ($currentModuleId == "admin" && $currentControllerId == "module") {
-            return $this->render('guide_administration', array());
+            return $this->render('guide_administration', []);
         }
     }
 
@@ -61,8 +61,8 @@ class Tour extends \humhub\components\Widget
      */
     public function loadResources(\yii\web\View $view)
     {
-        $view->registerJsFile('@web-static/resources/js/tour/bootstrap-tour.min.js');
-        $view->registerCssFile('@web-static/resources/js/tour/bootstrap-tour.min.css');
+        $view->registerJsFile('@web-static/js/tour/bootstrap-tour.min.js');
+        $view->registerCssFile('@web-static/js/tour/bootstrap-tour.min.css');
     }
 
 }

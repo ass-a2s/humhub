@@ -8,13 +8,19 @@
 
 namespace humhub\components;
 
+use Exception;
+use humhub\components\behaviors\PolymorphicRelation;
+use humhub\libs\Helpers;
+use humhub\modules\content\models\Content;
 use Yii;
 use yii\helpers\Html;
 use humhub\modules\user\models\User;
 use humhub\modules\content\components\ContentContainerActiveRecord;
 use humhub\modules\space\models\Space;
 use humhub\modules\content\interfaces\ContentOwner;
-use humhub\widgets\RichText;
+use humhub\modules\content\widgets\richtext\RichText;
+use yii\helpers\Json;
+use yii\helpers\Url;
 
 /**
  * This class represents a social Activity triggered within the network.
@@ -29,7 +35,7 @@ use humhub\widgets\RichText;
  * @since 1.1
  * @author buddha
  */
-abstract class SocialActivity extends \yii\base\Object implements rendering\Viewable, \Serializable
+abstract class SocialActivity extends \yii\base\BaseObject implements rendering\Viewable, \Serializable
 {
 
     /**
@@ -40,11 +46,23 @@ abstract class SocialActivity extends \yii\base\Object implements rendering\View
     public $originator;
 
     /**
+     * @var bool ensure originator existence
+     * @since 1.3
+     */
+    public $requireOriginator = true;
+
+    /**
      * The source instance which created this activity
      *
      * @var \yii\db\ActiveRecord
      */
     public $source;
+
+    /**
+     * @var bool ensure source existence
+     * @since 1.3
+     */
+    public $requireSource = true;
 
     /**
      * @var string the module id which this activity belongs to (required)
@@ -209,7 +227,7 @@ abstract class SocialActivity extends \yii\base\Object implements rendering\View
     {
         if ($this->source instanceof ContentContainerActiveRecord) {
             return $this->source;
-        } else if ($this->hasContent()) {
+        } elseif ($this->hasContent()) {
             return $this->getContent()->getContainer();
         }
 
@@ -234,7 +252,7 @@ abstract class SocialActivity extends \yii\base\Object implements rendering\View
 
         // Create absolute URL, for E-Mails
         if (substr($url, 0, 4) !== 'http') {
-            $url = \yii\helpers\Url::to($url, true);
+            $url = Url::to($url, true);
         }
 
         return $url;
@@ -263,7 +281,7 @@ abstract class SocialActivity extends \yii\base\Object implements rendering\View
      */
     public function json()
     {
-        return \yii\helpers\Json::encode($this->asArray());
+        return Json::encode($this->asArray());
     }
 
     /**
@@ -299,26 +317,25 @@ abstract class SocialActivity extends \yii\base\Object implements rendering\View
      * If no $content is provided the contentInfo of $source is returned.
      *
      * @param Content $content
-     * @return string
+     * @return string|null
      */
     public function getContentInfo(ContentOwner $content = null, $withContentName = true)
     {
         if (!$this->hasContent() && !$content) {
-            return;
-        } else if (!$content) {
+            return null;
+        } elseif (!$content) {
             $content = $this->source;
         }
 
-        $truncatedDescription = RichText::widget([
-            'text' => $content->getContentDescription(),
-            'minimal' => true,
-            'maxLength' => 60
-        ]);
+        $truncatedDescription = $this->getContentPreview($content, 60);
 
-        $trimmed = \humhub\libs\Helpers::trimText($truncatedDescription, 60);
+        if (empty($truncatedDescription)) {
+            return null;
+        }
+
+        $trimmed = Helpers::trimText($truncatedDescription, 60);
 
         return ($withContentName) ? Html::encode($content->getContentName()). ' "' . $trimmed . '"' : $trimmed;
-
     }
 
     /**
@@ -326,13 +343,13 @@ abstract class SocialActivity extends \yii\base\Object implements rendering\View
      * notification source.
      *
      * @param ContentOwner $content
-     * @return type
+     * @return string|null
      */
     public function getContentName(ContentOwner $content = null)
     {
         if (!$this->hasContent() && !$content) {
-            return;
-        } else if (!$content) {
+            return null;
+        } elseif (!$content) {
             $content = $this->source;
         }
 
@@ -345,22 +362,37 @@ abstract class SocialActivity extends \yii\base\Object implements rendering\View
      *
      *  If no $content is provided the contentPreview of $source is returned.
      *
-     * @param Content $content
-     * @return string
+     * @param ContentOwner $content
+     * @param int $maxLength
+     * @return string|null
+     * @throws Exception
      */
     public function getContentPreview(ContentOwner $content = null, $maxLength = 25)
     {
         if (!$this->hasContent() && !$content) {
-            return;
-        } else if (!$content) {
+            return null;
+        } elseif (!$content) {
             $content = $this->source;
         }
 
-        return RichText::widget([
-            'text' => $content->getContentDescription(),
-            'minimal' => true,
-            'maxLength' => $maxLength
-        ]);
+        return RichText::preview($content->getContentDescription(), $maxLength);
+    }
+
+    /**
+     * Validates the existence of required attributes
+     *
+     * @return bool
+     */
+    public function validate() {
+        if (empty($this->source) && $this->requireSource) {
+            return false;
+        }
+
+        if (empty($this->originator) && $this->requireOriginator) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -373,9 +405,20 @@ abstract class SocialActivity extends \yii\base\Object implements rendering\View
      */
     public function serialize()
     {
+        $sourceClass = null;
+        $sourcePk = null;
+
+        if ($this->source) {
+            $sourceClass = get_class($this->source);
+            $sourcePk = $this->source->getPrimaryKey();
+        }
+
+        $originatorId = ($this->originator != null) ? $this->originator->id : null;
+
         return serialize([
-            'source' => $this->source,
-            'originator' => $this->originator
+            'sourceClass' => $sourceClass,
+            'sourcePk' => $sourcePk,
+            'originator_id' => $originatorId
         ]);
     }
 
@@ -390,8 +433,25 @@ abstract class SocialActivity extends \yii\base\Object implements rendering\View
     {
         $this->init();
         $unserializedArr = unserialize($serialized);
-        $this->from($unserializedArr['originator']);
-        $this->about($unserializedArr['source']);
-    }
 
+        if(isset($unserializedArr['originator_id'])) {
+            $user = User::findOne(['id' => $unserializedArr['originator_id']]);
+            if ($user !== null) {
+                $this->from($user);
+            }
+        }
+
+        // Temporary for 1.3.0-beta.2 to 1.3.0-beta.3 updates with existing queue record
+        if (isset($unserializedArr['source'])) {
+            $this->about($unserializedArr['source']);
+        }
+
+        if (!empty($unserializedArr['sourceClass']) && !empty($unserializedArr['sourcePk'])) {
+            $source = PolymorphicRelation::loadActiveRecord($unserializedArr['sourceClass'], $unserializedArr['sourcePk']);
+            if ($source !== null) {
+                $this->about($source);
+            }
+        }
+
+    }
 }

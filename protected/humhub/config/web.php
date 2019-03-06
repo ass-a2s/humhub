@@ -9,7 +9,6 @@
 $config = [
     'id' => 'humhub',
     'bootstrap' => ['humhub\components\bootstrap\LanguageSelector'],
-    'homeUrl' => ['/dashboard/dashboard'],
     'defaultRoute' => '/home',
     'layoutPath' => '@humhub/views/layouts',
     'components' => [
@@ -27,11 +26,10 @@ $config = [
             'loginUrl' => ['/user/auth/login']
         ],
         'errorHandler' => [
-            'errorAction' => 'error/index',
+            'errorAction' => '/error/index',
         ],
         'session' => [
             'class' => 'humhub\modules\user\components\Session',
-            'sessionTable' => 'user_http_session',
         ],
     ],
     'modules' => [],

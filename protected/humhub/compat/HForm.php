@@ -8,8 +8,8 @@
 
 namespace humhub\compat;
 
-use humhub\widgets\MarkdownField;
-use humhub\widgets\MultiSelectField;
+use humhub\modules\ui\form\widgets\MultiSelect;
+use humhub\modules\ui\form\widgets\Markdown;
 use Yii;
 
 /**
@@ -19,15 +19,24 @@ use Yii;
  */
 class HForm extends \yii\base\Component
 {
-
     const EVENT_BEFORE_VALIDATE = 'beforeValidate';
     const EVENT_AFTER_VALIDATE = 'afterValidate';
+
+    /**
+     * @since 1.2.6
+     */
+    const EVENT_AFTER_INIT = 'afterInit';
+    
+    /**
+     * @since 1.2.6
+     */
+    const EVENT_BEFORE_RENDER = 'beforeRender';
 
     public $showErrorSummary;
     protected $form;
     public $primaryModel = null;
-    public $models = array();
-    public $definition = array();
+    public $models = [];
+    public $definition = [];
 
     /**
      * @var boolean manually mark form as submitted
@@ -40,12 +49,12 @@ class HForm extends \yii\base\Component
         $this->primaryModel = $primaryModel;
 
         $this->init();
+        $this->trigger(static::EVENT_AFTER_INIT);
     }
 
     public function submitted($buttonName = "")
     {
         if (Yii::$app->request->method == 'POST') {
-
             if ($buttonName == "" || isset($_POST[$buttonName])) {
                 foreach ($this->models as $model) {
                     $model->load(Yii::$app->request->post());
@@ -119,13 +128,15 @@ class HForm extends \yii\base\Component
     {
         $this->form = $form;
 
+        $this->trigger(static::EVENT_BEFORE_RENDER);
+
         $out = $this->renderElements($this->definition['elements']);
         $out .= $this->renderButtons($this->definition['buttons']);
 
         return $out;
     }
 
-    public function renderElements($elements, $forms = array())
+    public function renderElements($elements, $forms = [])
     {
         $output = "";
         foreach ($elements as $name => $element) {
@@ -236,12 +247,12 @@ class HForm extends \yii\base\Component
                         }
                         return $field;
                     case 'multiselectdropdown':
-                        return MultiSelectField::widget([
-                                    'form' => $this->form,
-                                    'model' => $model,
-                                    'attribute' => $name,
-                                    'items' => $definition['items'],
-                                    'options' => $definition['options']
+                        return MultiSelect::widget([
+                            'form' => $this->form,
+                            'model' => $model,
+                            'attribute' => $name,
+                            'items' => $definition['items'],
+                            'options' => $definition['options']
                         ]);
                     case 'dropdownlist':
                         return $this->form->field($model, $name)->dropDownList($definition['items'], $options);
@@ -278,16 +289,16 @@ class HForm extends \yii\base\Component
 
                         $yearRange = isset($definition['yearRange']) ? $definition['yearRange'] : (date('Y') - 100) . ":" . (date('Y') + 100);
 
-                        return $this->form->field($model, $name)->widget(\yii\jui\DatePicker::className(), [
-                                    'dateFormat' => $format,
-                                    'clientOptions' => [
-                                        'changeYear' => true,
-                                        'yearRange' => $yearRange,
-                                        'changeMonth' => true,
-                                        'disabled' => (isset($options['readOnly']) && $options['readOnly'])
-                                    ],
-                                    'options' => [
-                                        'class' => 'form-control']
+                        return $this->form->field($model, $name)->widget(\yii\jui\DatePicker::class, [
+                            'dateFormat' => $format,
+                            'clientOptions' => [
+                                'changeYear' => true,
+                                'yearRange' => $yearRange,
+                                'changeMonth' => true,
+                                'disabled' => (isset($options['readOnly']) && $options['readOnly'])
+                            ],
+                            'options' => [
+                                'class' => 'form-control']
                         ]);
                     case 'markdown':
                         $options['id'] = $name;
@@ -296,7 +307,7 @@ class HForm extends \yii\base\Component
                             $options['readonly'] = $options['readOnly'];
                             unset($options['readOnly']);
                         }
-                        $returnField = $this->form->field($model, $name)->widget(MarkdownField::class, $options);
+                        $returnField = $this->form->field($model, $name)->widget(Markdown::class, $options);
                         return $returnField;
                     default:
                         return "Field Type " . $definition['type'] . " not supported by Compat HForm";
@@ -310,5 +321,4 @@ class HForm extends \yii\base\Component
 
         return $output;
     }
-
 }

@@ -1,0 +1,23 @@
+<?php
+return array (
+  '<strong>E-Mail</strong> Summaries' => 'የ<strong>ኢሜል</strong> ጥቅል መግለጫ',
+  'Activities' => 'እንቅስቃሴ',
+  'Daily' => 'ዕለታዊ',
+  'E-Mail Summaries' => 'የኢሜል ጥቅል መግለጫ',
+  'E-Mail summaries are sent to inform you about recent activities in the network.' => 'በኔትዎርኩ ላይ ያለዎትን ወቅታዊ ተግባራት የሚያሳይ የኢሜል ጥቅል መረጃ ተልክዎሎታል።',
+  'E-Mail summaries are sent to users to inform them about recent activities in your network.' => 'ተጠቃሚዎች በኔትዎርኩ ላይ ያላቸውን ወቅታዊ ተግባራት የሚያሳይ የኢሜል ጥቅል መረጃ ተልኮላቸዋል።',
+  'Exclude spaces below from the mail summary' => 'ምህዳሮችን ከኢሜል ጥቅል መረጃው ስር አስወጣ',
+  'Hourly' => 'በየሰ' . "\0" . 'ዓቱ',
+  'Interval' => 'ልዩነት',
+  'Latest news' => 'ወቅታዊ ዜና',
+  'Never' => 'ፈፅሞ',
+  'On this page you can configure the contents and the interval of these e-mail updates.' => 'በዚህ ገፅ ላይ ይዘቶችን ሊያዋቅሩና   እነዚህን ኢሜሎች ራሳቸውን የሚያዘምኑበትን የጊዜ ልዩነት ሊያመቻቹ ይችላሉ።',
+  'On this page you can define the default behavior for your users. These settings can be overwritten by users in their account settings page.' => 'በዚህ ገፅ ላይ የተጠቃሚዎችዎን ነበሪ ባህሪያት ሊወስኑ ይችላሉ። ይህ ማስተካከያ ተጠቃሚዎሽ በአካውንታቸው ማስተካከያ ላይ አስተካክለው ሊፅፉት ይችላሉ።',
+  'Only include spaces below to the mail summary' => 'ምህዳሮቹን ከኢሜሉ ጥቅል መረጃ ስር ላይ ብቻ አካት።',
+  'Reset to defaults' => 'ወደቀደሙት ነባሪዎች መልስ',
+  'Spaces' => 'ምህዳሮች',
+  'Weekly' => 'ሳምንታዊ',
+  'You will only receive an e-mail if there is something new.' => 'አዲስ ነገር ሲኖር ኢሜል ብቻ ይደርስዎታል።',
+  'Your daily summary' => 'ዕለታዊ ጥቅል መረጃዎ',
+  'Your weekly summary' => 'ሳምንታዊ ጥቅል መረጃዎ',
+);

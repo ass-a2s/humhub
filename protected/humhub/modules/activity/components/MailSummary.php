@@ -13,7 +13,7 @@ use yii\base\Exception;
 use yii\base\Component;
 use yii\helpers\Url;
 use yii\db\Expression;
-use humhub\modules\dashboard\components\actions\DashboardStream;
+use humhub\modules\dashboard\components\actions\DashboardStreamAction;
 use humhub\modules\content\models\ContentContainer;
 use humhub\modules\activity\models\MailSummaryForm;
 use humhub\modules\activity\models\Activity;
@@ -31,7 +31,7 @@ class MailSummary extends Component
      * Intervals
      */
     const INTERVAL_NONE = 0;
-    const INTERVAL_HOURY = 1;
+    const INTERVAL_HOURLY = 1;
     const INTERVAL_DAILY = 2;
     const INTERVAL_WEEKLY = 3;
 
@@ -117,7 +117,7 @@ class MailSummary extends Component
     {
         if ($this->interval === self::INTERVAL_DAILY) {
             return Yii::t('ActivityModule.base', 'Your daily summary');
-        } elseif ($this->interval === self::INTERVAL_HOURY) {
+        } elseif ($this->interval === self::INTERVAL_HOURLY) {
             return Yii::t('ActivityModule.base', 'Latest news');
         } elseif ($this->interval === self::INTERVAL_WEEKLY) {
             return Yii::t('ActivityModule.base', 'Your weekly summary');
@@ -131,11 +131,12 @@ class MailSummary extends Component
      *
      * @return \humhub\modules\activity\models\Activity[] the activities
      */
-    protected function getActivities()
+    public function getActivities()
     {
-        $stream = new DashboardStream('stream', Yii::$app->controller);
+        $stream = new DashboardStreamAction('stream', Yii::$app->controller);
+        $stream->activity = true;
         $stream->limit = $this->maxActivityCount;
-        $stream->mode = DashboardStream::MODE_ACTIVITY;
+        $stream->mode = DashboardStreamAction::MODE_ACTIVITY;
         $stream->user = $this->user;
         $stream->init();
         $stream->activeQuery->andWhere(['>', 'content.created_at', $this->getLastSummaryDate()]);

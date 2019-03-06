@@ -1,6 +1,8 @@
 <?php
 return array (
   'As owner of this space you can transfer this role to another administrator in space.' => 'Als eigenaar van deze ruimte  kunt u deze rol overdragen naar een andere administrator in deze ruimte.',
+  'Remove from space' => 'Verwijderen uit de ruimte',
+  'Show all' => 'Toon alles',
   'Space owner' => 'Ruimte eigenaar',
   'The url contains illegal characters!' => 'De URL bevat niet toegestane tekens,',
   'Transfer ownership' => 'Eigenaarschap overdragen',

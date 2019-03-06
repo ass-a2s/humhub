@@ -9,6 +9,7 @@
 namespace humhub\modules\user\models;
 
 use humhub\components\ActiveRecord;
+use humhub\libs\Helpers;
 use humhub\modules\user\models\fieldtype\BaseType;
 use Yii;
 use yii\db\ActiveQuery;
@@ -60,17 +61,18 @@ class ProfileField extends ActiveRecord
      */
     public function rules()
     {
-        return array(
-            array(['profile_field_category_id', 'field_type_class', 'internal_name', 'title', 'sort_order'], 'required'),
-            array(['profile_field_category_id', 'required', 'editable', 'searchable', 'show_at_registration', 'visible', 'sort_order'], 'integer'),
-            array(['module_id', 'field_type_class', 'title'], 'string', 'max' => 255),
-            array('internal_name', 'string', 'max' => 100),
-            array(['ldap_attribute', 'translation_category'], 'string', 'max' => 255),
-            array('internal_name', 'checkInternalName'),
-            array('internal_name', 'match', 'not' => true, 'pattern' => '/[^a-zA-Z0-9_]/', 'message' => Yii::t('UserModule.models_ProfileField', 'Only alphanumeric characters allowed!')),
-            array('field_type_class', 'checkType'),
-            array(['description'], 'safe'),
-        );
+        return [
+            [['profile_field_category_id', 'field_type_class', 'internal_name', 'title', 'sort_order'], 'required'],
+            [['profile_field_category_id', 'required', 'editable', 'searchable', 'show_at_registration', 'visible', 'sort_order'], 'integer'],
+            [['module_id', 'field_type_class', 'title'], 'string', 'max' => 255],
+            ['internal_name', 'string', 'max' => 100],
+            [['ldap_attribute', 'translation_category'], 'string', 'max' => 255],
+            ['internal_name', 'checkInternalName'],
+            ['internal_name', 'match', 'not' => true, 'pattern' => '/[^a-zA-Z0-9_]/', 'message' => Yii::t('UserModule.models_ProfileField', 'Only alphanumeric characters allowed!')],
+            ['internal_name', 'match', 'pattern' => '/[a-zA-Z]/', 'message' => Yii::t('UserModule.models_ProfileField', 'Must contain at least one character.')],
+            ['field_type_class', 'checkType'],
+            [['description'], 'safe'],
+        ];
     }
 
     /**
@@ -78,7 +80,7 @@ class ProfileField extends ActiveRecord
      */
     public function getCategory()
     {
-        return $this->hasOne(ProfileFieldCategory::className(), ['id' => 'profile_field_category_id']);
+        return $this->hasOne(ProfileFieldCategory::class, ['id' => 'profile_field_category_id']);
     }
 
     /**
@@ -86,7 +88,7 @@ class ProfileField extends ActiveRecord
      */
     public function attributeLabels()
     {
-        return array(
+        return [
             'id' => Yii::t('UserModule.models_ProfileField', 'ID'),
             'profile_field_category_id' => Yii::t('UserModule.models_ProfileField', 'Profile Field Category'),
             'module_id' => Yii::t('UserModule.models_ProfileField', 'Module'),
@@ -107,7 +109,7 @@ class ProfileField extends ActiveRecord
             'created_by' => Yii::t('UserModule.models_ProfileField', 'Created by'),
             'updated_at' => Yii::t('UserModule.models_ProfileField', 'Updated at'),
             'updated_by' => Yii::t('UserModule.models_ProfileField', 'Updated by'),
-        );
+        ];
     }
 
     /**
@@ -139,6 +141,7 @@ class ProfileField extends ActiveRecord
      * Returns the ProfileFieldType Class for this Profile Field
      *
      * @return BaseType
+     * @throws \yii\base\Exception
      */
     public function getFieldType()
     {
@@ -146,7 +149,7 @@ class ProfileField extends ActiveRecord
         if ($this->_fieldType != null)
             return $this->_fieldType;
 
-        if ($this->field_type_class != "" && \humhub\libs\Helpers::CheckClassType($this->field_type_class, fieldtype\BaseType::className())) {
+        if ($this->field_type_class != "" && Helpers::CheckClassType($this->field_type_class, fieldtype\BaseType::class)) {
             $type = $this->field_type_class;
             $this->_fieldType = new $type;
             $this->_fieldType->setProfileField($this);
@@ -158,75 +161,75 @@ class ProfileField extends ActiveRecord
     /**
      * Returns The Form Definition to edit the ProfileField Model.
      *
-     * @return Array CForm Definition
+     * @return array CForm Definition
      */
     public function getFormDefinition()
     {
         $categories = ProfileFieldCategory::find()->orderBy('sort_order')->all();
         $profileFieldTypes = new fieldtype\BaseType();
-        $definition = array(
-            'ProfileField' => array(
+        $definition = [
+            'ProfileField' => [
                 'type' => 'form',
                 #'showErrorSummary' => true,
-                'elements' => array(
-                    'internal_name' => array(
+                'elements' => [
+                    'internal_name' => [
                         'type' => 'text',
                         'maxlength' => 32,
                         'class' => 'form-control',
-                    ),
-                    'title' => array(
+                    ],
+                    'title' => [
                         'type' => 'text',
                         'maxlength' => 32,
                         'class' => 'form-control',
-                    ),
-                    'description' => array(
+                    ],
+                    'description' => [
                         'type' => 'textarea',
                         'class' => 'form-control',
-                    ),
-                    'sort_order' => array(
+                    ],
+                    'sort_order' => [
                         'type' => 'text',
                         'maxlength' => 32,
                         'class' => 'form-control',
-                    ),
-                    'translation_category' => array(
+                    ],
+                    'translation_category' => [
                         'type' => 'text',
                         'maxlength' => 32,
                         'class' => 'form-control',
                         'value' => $this->getTranslationCategory(),
-                    ),
+                    ],
                     //ToDo: Hide me, when Ldap Support is disabled
-                    'ldap_attribute' => array(
+                    'ldap_attribute' => [
                         'type' => 'text',
                         'maxlength' => 255,
                         'class' => 'form-control',
-                    ),
-                    'required' => array(
+                    ],
+                    'required' => [
                         'type' => 'checkbox',
-                    ),
-                    'visible' => array(
+                    ],
+                    'visible' => [
                         'type' => 'checkbox',
-                    ),
-                    'show_at_registration' => array(
+                    ],
+                    'show_at_registration' => [
                         'type' => 'checkbox',
-                    ),
-                    'editable' => array(
+                    ],
+                    'editable' => [
                         'type' => 'checkbox',
-                    ),
-                    'searchable' => array(
+                    ],
+                    'searchable' => [
                         'type' => 'checkbox',
-                    ),
-                    'profile_field_category_id' => array(
+                    ],
+                    'profile_field_category_id' => [
                         'type' => 'dropdownlist',
                         'items' => \yii\helpers\ArrayHelper::map($categories, 'id', 'title'),
                         'class' => 'form-control',
-                    ),
-                    'field_type_class' => array(
+                    ],
+                    'field_type_class' => [
                         'type' => 'dropdownlist',
                         'items' => $profileFieldTypes->getFieldTypes(),
                         'class' => 'form-control',
-                    ),
-                )
-        ));
+                    ],
+                ]
+            ]];
 
         // Field Type and Internal Name cannot be changed for existing records
         // So disable these fields.
@@ -250,7 +253,6 @@ class ProfileField extends ActiveRecord
         $this->internal_name = trim($this->internal_name);
 
         if (!$this->isNewRecord) {
-
             // Dont allow changes of internal_name - Maybe not the best way to check it.
             $currentProfileField = ProfileField::findOne(['id' => $this->id]);
             if ($this->internal_name != $currentProfileField->internal_name) {

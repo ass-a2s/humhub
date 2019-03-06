@@ -75,9 +75,9 @@ class SearchController extends Controller
         if ($model->scope == SearchForm::SCOPE_CONTENT) {
             $options['type'] = Search::DOCUMENT_TYPE_CONTENT;
         } elseif ($model->scope == SearchForm::SCOPE_SPACE) {
-            $options['model'] = Space::className();
+            $options['model'] = Space::class;
         } elseif ($model->scope == SearchForm::SCOPE_USER) {
-            $options['model'] = User::className();
+            $options['model'] = User::class;
         } else {
             $model->scope = SearchForm::SCOPE_ALL;
         }
@@ -111,7 +111,7 @@ class SearchController extends Controller
         $keyword = Yii::$app->request->get('keyword', '');
 
         $searchResultSet = Yii::$app->search->find($keyword, [
-            'model' => [User::className(), Space::className()],
+            'model' => [User::class, Space::class],
             'pageSize' => 10
         ]);
 

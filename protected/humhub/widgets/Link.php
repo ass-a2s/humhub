@@ -27,6 +27,7 @@ use yii\helpers\Url;
  */
 class Link extends Button
 {
+    public $_link = true;
 
     public static function to($text, $url = '#', $pjax = true) {
         return self::asLink($text, $url)->pjax($pjax);
@@ -36,10 +37,29 @@ class Link extends Button
         return self::asLink($text)->action($action,$url, $target);
     }
 
+    /**
+     * @param $url
+     * @return $this
+     */
+    public function post($url)
+    {
+        // Note data-method automatically prevents pjax
+        $this->href($url);
+        $this->htmlOptions['data-method'] = 'POST';
+        return $this;
+    }
+
+    /**
+     * @param string $url
+     * @param bool $pjax
+     * @return $this
+     */
     public function href($url = '#', $pjax = true)
     {
         $this->link($url);
         $this->pjax($pjax);
         return $this;
     }
+
+
 }

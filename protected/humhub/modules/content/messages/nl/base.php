@@ -1,7 +1,21 @@
 <?php
 return array (
+  '<strong>Move</strong> content' => 'Inhoud <strong>verplaatsen</strong>',
   'Content' => 'Inhoud',
   'Content Tag with invalid contentcontainer_id assigned.' => 'Content Tag met ongeldige contentcontainer_id toegewezen.',
+  'Content has been moved to {spacename}' => 'De inhoud is verplaatst naar {spacename}',
+  'Invalid space selection.' => 'Ongeldige ruimteselectie.',
+  'Move content' => 'Verplaats inhoud',
+  'Target Space' => 'Nieuwe ruimte',
+  'The author of this content is not allowed to create private content within the selected space.' => 'De auteur van deze inhoud mag geen privé-inhoud maken binnen de geselecteerde ruimte.',
+  'The author of this content is not allowed to create public content within the selected space.' => 'De auteur van deze inhoud mag geen openbare-inhoud maken binnen de geselecteerde ruimte.',
+  'The content can\'t be moved to its current space.' => 'De inhoud kan niet worden verplaatst naar de huidige ruimte.',
+  'The module {moduleName} is not enabled on the selected target space.' => 'De module {moduleName} is niet ingeschakeld in de geselecteerde nieuwe ruimte.',
+  'This content type can\'t be moved due to a missing module-id setting.' => 'Dit inhoudstype kan niet worden verplaatst vanwege een ontbrekende module-ID-instelling.',
+  'This content type can\'t be moved.' => 'Dit inhoudstype kan niet worden verplaatst.',
   'This space is not visible!' => 'Deze ruimte is niet zichtbaar!',
+  'Topics' => 'Rubriek',
   'Updated' => 'Bijgewerkt',
+  'You do not have the permission to move this content to the given space.' => 'U bent niet gemachtigd om deze inhoud naar de opgegeven ruimte te verplaatsen.',
+  'You do not have the permission to move this content.' => 'U bent niet gemachtigd om deze inhoud  te verplaatsen.',
 );

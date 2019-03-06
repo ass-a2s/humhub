@@ -1,7 +1,21 @@
 <?php
 return array (
+  '<strong>Move</strong> content' => '<strong>Sposta</strong> contenuto',
   'Content' => 'Contenuti',
   'Content Tag with invalid contentcontainer_id assigned.' => 'Contenuto Tag assegnato con un valore non valido di contentcontainer_id.',
+  'Content has been moved to {spacename}' => 'Il contenuto é stato spostato in {spacename}',
+  'Invalid space selection.' => 'Spazio selezionato non valido',
+  'Move content' => 'Sposta contentuto',
+  'Target Space' => 'Spazio di destinazione',
+  'The author of this content is not allowed to create private content within the selected space.' => 'L\'autore di questo contenuto non può creare contenuti privati nello spazio selezionato.',
+  'The author of this content is not allowed to create public content within the selected space.' => 'L\'autore di questo contentuto non può creare contenuti pubblici nello spazio selezionato.',
+  'The content can\'t be moved to its current space.' => 'Il contenuto non può essere spostaro dal suo spazio attuale. ',
+  'The module {moduleName} is not enabled on the selected target space.' => 'Il modulo {moduleName} non è attivato nello spazio selezionato.',
+  'This content type can\'t be moved due to a missing module-id setting.' => 'Il contenuto non può essere spostato perchè è mancante il settaggio dell\'id modulo',
+  'This content type can\'t be moved.' => 'Il contentuto non può essere spostato. ',
   'This space is not visible!' => 'Questo spazio non è visibile!',
+  'Topics' => 'Argomenti',
   'Updated' => 'Aggiornato',
+  'You do not have the permission to move this content to the given space.' => 'Non hai il permesso di spostare il contenuto nello spazio indicato. ',
+  'You do not have the permission to move this content.' => 'Non hai il permesso di spostare questo contenuto. ',
 );

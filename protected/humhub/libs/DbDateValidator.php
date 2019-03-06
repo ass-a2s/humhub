@@ -9,6 +9,7 @@
 namespace humhub\libs;
 
 use Yii;
+use yii\validators\DateValidator;
 
 /**
  * Validates (user date format or database format) and converts it to an database date(-time) field
@@ -16,7 +17,7 @@ use Yii;
  * @see \yii\validators\DateValidator
  * @author luke
  */
-class DbDateValidator extends \yii\validators\DateValidator
+class DbDateValidator extends DateValidator
 {
 
     /**
@@ -198,5 +199,4 @@ class DbDateValidator extends \yii\validators\DateValidator
     {
         return (preg_match(self::REGEX_DBFORMAT_DATE, $value) || preg_match(self::REGEX_DBFORMAT_DATETIME, $value));
     }
-
 }

@@ -26,7 +26,9 @@ class m160205_203913_foreign_keys extends Migration
         try {
             $this->alterColumn('space_module', 'space_id', $this->integer()->null());
             $this->update('space_module', ['space_id' => new yii\db\Expression('NULL')], ['space_id' => 0]);
-            $this->addForeignKey('fk_space_module-space_id', 'space_module', 'space_id', 'space', 'id', 'CASCADE', 'CASCADE');
+            
+            # Not required in 1.3
+            #$this->addForeignKey('fk_space_module-space_id', 'space_module', 'space_id', 'space', 'id', 'CASCADE', 'CASCADE');
         } catch (Exception $ex) {
             Yii::error($ex->getMessage());
         }
@@ -38,7 +40,8 @@ class m160205_203913_foreign_keys extends Migration
         }
 
         try {
-            $this->addForeignKey('fk_space_module-module_id', 'space_module', 'module_id', 'module_enabled', 'module_id', 'CASCADE', 'CASCADE');
+            # Not required in 1.3
+            # $this->addForeignKey('fk_space_module-module_id', 'space_module', 'module_id', 'module_enabled', 'module_id', 'CASCADE', 'CASCADE');
         } catch (Exception $ex) {
             Yii::error($ex->getMessage());
         }

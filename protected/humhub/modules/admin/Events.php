@@ -8,6 +8,8 @@
 
 namespace humhub\modules\admin;
 
+use humhub\modules\admin\widgets\AdminMenu;
+use humhub\modules\user\events\UserEvent;
 use Yii;
 
 /**
@@ -15,7 +17,7 @@ use Yii;
  *
  * @since 0.5
  */
-class Events extends \yii\base\Object
+class Events extends \yii\base\BaseObject
 {
 
     /**
@@ -31,11 +33,13 @@ class Events extends \yii\base\Object
 
         if (Yii::$app->getModule('user')->settings->get('auth.needApproval')) {
             if (Yii::$app->user->getIdentity()->canApproveUsers()) {
-                $event->sender->addWidget(widgets\DashboardApproval::className(), [], [
+                $event->sender->addWidget(widgets\DashboardApproval::class, [], [
                     'sortOrder' => 99
                 ]);
             }
         }
+
+        $event->sender->addWidget(widgets\IncompleteSetupWarning::class, [], ['sortOrder' => 1]);
     }
 
     /**
@@ -57,7 +61,13 @@ class Events extends \yii\base\Object
     public static function onConsoleApplicationInit($event)
     {
         $application = $event->sender;
-        $application->controllerMap['module'] = commands\ModuleController::className();
+        $application->controllerMap['module'] = commands\ModuleController::class;
     }
 
+    /**
+     * @param $event UserEvent
+     */
+    public static function onSwitchUser($event) {
+        AdminMenu::reset();
+    }
 }

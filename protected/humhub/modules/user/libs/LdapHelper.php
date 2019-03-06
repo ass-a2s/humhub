@@ -9,10 +9,6 @@
 namespace humhub\modules\user\libs;
 
 use Yii;
-use yii\base\InvalidParamException;
-use Zend\Ldap\Ldap;
-use Zend\Ldap\Exception\LdapException;
-use humhub\modules\user\authclient\ZendLdapClient;
 
 /**
  * This class contains a lot of html helpers for the views
@@ -24,7 +20,7 @@ class LdapHelper
 
     public static function getLdapConnection()
     {
-        $options = array(
+        $options = [
             'host' => Yii::$app->getModule('user')->settings->get('auth.ldap.hostname'),
             'port' => Yii::$app->getModule('user')->settings->get('auth.ldap.port'),
             'username' => Yii::$app->getModule('user')->settings->get('auth.ldap.username'),
@@ -34,7 +30,7 @@ class LdapHelper
             'bindRequiresDn' => true,
             'baseDn' => Yii::$app->getModule('user')->settings->get('auth.ldap.baseDn'),
             'accountFilterFormat' => Yii::$app->getModule('user')->settings->get('auth.ldap.loginFilter'),
-        );
+        ];
 
         $ldap = new \Zend\Ldap\Ldap($options);
         $ldap->bind();

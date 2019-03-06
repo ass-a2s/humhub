@@ -4,6 +4,8 @@ use humhub\modules\dashboard\widgets\DashboardContent;
 use humhub\modules\dashboard\widgets\Sidebar;
 use humhub\modules\directory\widgets\NewMembers;
 use humhub\modules\directory\widgets\NewSpaces;
+use humhub\widgets\FooterMenu;
+
 ?>
 
 <div class="container">
@@ -15,18 +17,19 @@ use humhub\modules\directory\widgets\NewSpaces;
             <?= Sidebar::widget([
                 'widgets' => [
                     [
-                        NewMembers::className(),
+                        NewMembers::class,
                         ['showMoreButton' => true],
                         ['sortOrder' => 300]
                     ],
                     [
-                        NewSpaces::className(),
+                        NewSpaces::class,
                         ['showMoreButton' => true],
                         ['sortOrder' => 400]
                     ],
                 ]
             ]);
             ?>
+            <?= FooterMenu::widget(['location' => FooterMenu::LOCATION_SIDEBAR]); ?>
         </div>
     </div>
 </div>

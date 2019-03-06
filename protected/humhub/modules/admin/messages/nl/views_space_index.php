@@ -1,8 +1,7 @@
 <?php
 return array (
   '<strong>Manage</strong> spaces' => '<strong>Beheer</strong> ruimtes',
-  'Actions' => 'Acties',
-  'Here you can define your default settings for new spaces. These settings can be overwritten for each individual space.' => 'Hier kun je de standaard instellingen van ruimtes veranderen. Deze instellingen kunnen door gebruikers zelf per ruimte veranderd worden.',
+  'Here you can define your default settings for new spaces. These settings can be overwritten for each individual space.' => 'Verander hier de standaard instellingen van ruimtes. Een gebruiker kan deze instellingen zelf per ruimte veranderen.',
   'Overview' => 'Overzicht',
   'Settings' => 'Instellingen',
   'Spaces' => 'Ruimtes',

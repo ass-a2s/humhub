@@ -10,8 +10,6 @@ namespace humhub\libs;
 
 use Yii;
 use yii\grid\DataColumn;
-use yii\helpers\Json;
-use yii\helpers\Html;
 use yii\web\JsExpression;
 
 /**
@@ -40,7 +38,7 @@ class DropDownGridColumn extends DataColumn
     /**
      * @var array ajax options
      */
-    public $ajaxOptions = array();
+    public $ajaxOptions = [];
     public $readonly = false;
 
     /**
@@ -109,5 +107,4 @@ class DropDownGridColumn extends DataColumn
 
         return Html::dropDownList($inputName, $model[$this->attribute], $options, $this->htmlOptions);
     }
-
 }

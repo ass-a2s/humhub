@@ -9,6 +9,9 @@
 namespace humhub\modules\notification\widgets;
 
 use Yii;
+use humhub\widgets\JsWidget;
+use humhub\modules\notification\controllers\ListController;
+use yii\helpers\Url;
 
 /**
  * Notificaiton overview widget.
@@ -16,8 +19,23 @@ use Yii;
  * @author buddha
  * @since 1.1
  */
-class Overview extends \yii\base\Widget
+class Overview extends JsWidget
 {
+    public $id = 'notification_widget';
+
+    public function init()
+    {
+        $this->view->registerJsConfig('notification', [
+            'icon' => $this->view->theme->getBaseUrl().'/ico/notification-o.png',
+            'loadEntriesUrl' => Url::to(['/notification/list']),
+            'sendDesktopNotifications' => boolval(Yii::$app->notification->getDesktopNoficationSettings(Yii::$app->user->getIdentity())),
+            'text' =>  [
+                'placeholder' => Yii::t('NotificationModule.widgets_views_list', 'There are no notifications yet.')
+            ]
+        ]);
+
+        parent::init();
+    }
 
     /**
      * @inheritdoc
@@ -25,14 +43,29 @@ class Overview extends \yii\base\Widget
     public function run()
     {
         if (Yii::$app->user->isGuest) {
-            return;
+            return '';
         }
 
         return $this->render('overview', [
-            'update' => \humhub\modules\notification\controllers\ListController::getUpdates(),
-            'unseenCount' => \humhub\modules\notification\models\Notification::findUnseen()->count()]);
+            'options' => $this->getOptions()
+        ]);
     }
 
+    public function getAttributes()
+    {
+        return [
+            'id' => 'notification_widget',
+            'class' => "btn-group"
+        ];
+    }
+
+    public function getData()
+    {
+        return [
+            'ui-init' => ListController::getUpdates(),
+            'ui-widget' => "notification.NotificationDropDown"
+        ];
+    }
 }
 
 ?>

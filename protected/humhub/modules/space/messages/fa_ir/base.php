@@ -18,10 +18,14 @@
  */
 return [
     'Administrator:' => '',
+    'Archived' => '',
     'Moderator:' => '',
+    'Name' => '',
     'Owner:' => '',
+    'User invitations have been added to the queue' => '',
+    'User memberships have been added to the queue' => '',
+    '{count} members' => '',
     '<strong>Space</strong> followers' => '<strong>دنبال كنندگان</strong>',
-    'Could not delete user who is a space owner! Name of Space: {spaceName}' => 'امکان حذف کاربری که دارنده‌ی انجمن است وجود ندارد! نام انجمن: {spaceName}',
     'Default' => 'پيش فرض',
     'Everyone can enter' => 'همه می‌توانند وارد شوند',
     'Invite and request' => 'دعوت و درخواست',
@@ -33,7 +37,6 @@ return [
     'Public (Members & Guests)' => 'عمومی (اعضا و مهمانان)',
     'Public (Members only)' => 'عمومی (فقط اعضا)',
     'Public (Registered users only)' => 'عمومی (فقط کاربران ثبت‌نام‌شده)',
-    'Public (Visible)' => 'عمومی (قابل مشاهده)',
     'Settings' => 'تنطیمات',
     'Space' => 'انجمن',
     'Visible for all (members and guests)' => 'قابل نمایش برای همه (اعضا و مهمانان)',

@@ -13,7 +13,7 @@ use humhub\modules\notification\targets\BaseTarget;
 use humhub\modules\notification\targets\MailTarget;
 use humhub\modules\notification\targets\WebTarget;
 use humhub\modules\notification\targets\MobileTarget;
-use yii\base\Object;
+use yii\base\BaseObject;
 use yii\base\InvalidConfigException;
 
 /**
@@ -21,7 +21,7 @@ use yii\base\InvalidConfigException;
  * configure the notifications in the notification settings.
  * 
  */
-abstract class NotificationCategory extends Object
+abstract class NotificationCategory extends BaseObject
 {
 
     /**
@@ -42,7 +42,7 @@ abstract class NotificationCategory extends Object
     {
         parent::init();
         if (!$this->id) {
-            throw new InvalidConfigException('NotificationCategories have to define an id property, which is not the case for "' . self::class . '"');
+            throw new InvalidConfigException('NotificationCategories have to define an id property, which is not the case for "' . static::class . '"');
         }
     }
 

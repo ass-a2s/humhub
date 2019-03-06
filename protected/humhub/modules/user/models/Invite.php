@@ -9,6 +9,8 @@
 namespace humhub\modules\user\models;
 
 use humhub\components\ActiveRecord;
+use humhub\modules\user\models\User;
+use humhub\modules\space\models\Space;
 use Yii;
 use yii\helpers\Url;
 
@@ -28,13 +30,16 @@ use yii\helpers\Url;
  * @property string $language
  * @property string $firstname
  * @property string $lastname
+ * @property string $captcha
  */
 class Invite extends ActiveRecord
 {
 
-    const SOURCE_SELF = "self";
-    const SOURCE_INVITE = "invite";
+    const SOURCE_SELF = 'self';
+    const SOURCE_INVITE = 'invite';
     const TOKEN_LENGTH = 12;
+
+    public $captcha;
 
     /**
      * @inheritdoc
@@ -53,12 +58,14 @@ class Invite extends ActiveRecord
             [['user_originator_id', 'space_invite_id'], 'integer'],
             [['token'], 'unique'],
             [['firstname', 'lastname'], 'string', 'max' => 255],
-            [['email', 'source', 'token'], 'string', 'max' => 254],
+            [['source', 'token'], 'string', 'max' => 254],
+            [['email'], 'string', 'max' => 150],
             [['language'], 'string', 'max' => 10],
             [['email'], 'required'],
             [['email'], 'unique'],
             [['email'], 'email'],
-            [['email'], 'unique', 'targetClass' => \humhub\modules\user\models\User::className(), 'message' => Yii::t('UserModule.base', 'E-Mail is already in use! - Try forgot password.')],
+            [['email'], 'unique', 'targetClass' => User::class, 'message' => Yii::t('UserModule.base', 'E-Mail is already in use! - Try forgot password.')],
+            [['captcha'], 'captcha', 'captchaAction' => 'user/auth/captcha', 'on' => static::SOURCE_INVITE],
         ];
     }
 
@@ -69,6 +76,11 @@ class Invite extends ActiveRecord
     {
         $scenarios = parent::scenarios();
         $scenarios['invite'] = ['email'];
+
+        if ($this->showCaptureInRegisterForm()) {
+            $scenarios['invite'][] = 'captcha';
+        }
+
         return $scenarios;
     }
 
@@ -106,7 +118,7 @@ class Invite extends ActiveRecord
             $existingInvite->delete();
         }
 
-        if ($this->allowSelfInvite() && $this->validate() && $this->save()) {
+        if ($this->allowSelfInvite() && $this->save()) {
             $this->sendInviteMail();
             return true;
         }
@@ -124,11 +136,10 @@ class Invite extends ActiveRecord
 
         // User requested registration link by its self
         if ($this->source == self::SOURCE_SELF) {
-
             $mail = Yii::$app->mailer->compose([
                 'html' => '@humhub/modules/user/views/mails/UserInviteSelf',
                 'text' => '@humhub/modules/user/views/mails/plaintext/UserInviteSelf'
-                    ], [
+            ], [
                 'token' => $this->token,
                 'registrationUrl' => $registrationUrl
             ]);
@@ -137,14 +148,14 @@ class Invite extends ActiveRecord
             $mail->send();
         } elseif ($this->source == self::SOURCE_INVITE && $this->space !== null) {
 
-            if($module->sendInviteMailsInGlobalLanguage) {
+            if ($module->sendInviteMailsInGlobalLanguage) {
                 Yii::$app->language = Yii::$app->settings->get('defaultLanguage');
             }
 
             $mail = Yii::$app->mailer->compose([
                 'html' => '@humhub/modules/user/views/mails/UserInviteSpace',
                 'text' => '@humhub/modules/user/views/mails/plaintext/UserInviteSpace'
-                    ], [
+            ], [
                 'token' => $this->token,
                 'originator' => $this->originator,
                 'originatorName' => $this->originator->displayName,
@@ -156,7 +167,7 @@ class Invite extends ActiveRecord
             $mail->send();
 
             // Switch back to users language
-            if (Yii::$app->user->language !== "") {
+            if (Yii::$app->user->language !== '') {
                 Yii::$app->language = Yii::$app->user->language;
             }
         } elseif ($this->source == self::SOURCE_INVITE) {
@@ -169,7 +180,7 @@ class Invite extends ActiveRecord
             $mail = Yii::$app->mailer->compose([
                 'html' => '@humhub/modules/user/views/mails/UserInvite',
                 'text' => '@humhub/modules/user/views/mails/plaintext/UserInvite'
-                    ], [
+            ], [
                 'originator' => $this->originator,
                 'originatorName' => $this->originator->displayName,
                 'token' => $this->token,
@@ -180,7 +191,7 @@ class Invite extends ActiveRecord
             $mail->send();
 
             // Switch back to users language
-            if (Yii::$app->user->language !== "") {
+            if (Yii::$app->user->language !== '') {
                 Yii::$app->language = Yii::$app->user->language;
             }
         }
@@ -193,7 +204,7 @@ class Invite extends ActiveRecord
      */
     public function getOriginator()
     {
-        return $this->hasOne(\humhub\modules\user\models\User::className(), ['id' => 'user_originator_id']);
+        return $this->hasOne(User::class, ['id' => 'user_originator_id']);
     }
 
     /**
@@ -203,7 +214,7 @@ class Invite extends ActiveRecord
      */
     public function getSpace()
     {
-        return $this->hasOne(\humhub\modules\space\models\Space::className(), ['id' => 'space_invite_id']);
+        return $this->hasOne(Space::class, ['id' => 'space_invite_id']);
     }
 
     /**
@@ -216,4 +227,8 @@ class Invite extends ActiveRecord
         return (Yii::$app->getModule('user')->settings->get('auth.anonymousRegistration'));
     }
 
+    public function showCaptureInRegisterForm()
+    {
+        return (Yii::$app->getModule('user')->settings->get('auth.showCaptureInRegisterForm'));
+    }
 }

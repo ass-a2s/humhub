@@ -2,9 +2,11 @@
 
 namespace humhub\modules\user\widgets;
 
-use Yii;
-use \yii\helpers\Url;
+use humhub\modules\user\models\User;
 use humhub\widgets\BasePickerField;
+use Yii;
+use yii\helpers\Html;
+use yii\helpers\Url;
 
 /**
  *
@@ -14,25 +16,33 @@ use humhub\widgets\BasePickerField;
  */
 class UserPickerField extends BasePickerField
 {
-
     /**
-     * @inheritdoc 
+     * @inheritdoc
      */
     public $defaultRoute = '/user/search/json';
-    
+
     /**
-     * @inheritdoc 
+     * @inheritdoc
      */
     public $jsWidget = 'user.picker.UserPicker';
 
     /**
-     * @inheritdoc 
+     * @inheritdoc
+     * The 'guid' value is default for UserPickerField
      */
-    public function init() {
-        $this->itemClass = \humhub\modules\user\models\User::className();
-        $this->itemKey = 'guid';
+    public $itemKey = 'guid';
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        $this->itemClass = User::class;
+        if (empty($this->itemKey)) {
+            $this->itemKey = 'guid';
+        }
     }
-    
+
     /**
      * @inheritdoc
      */
@@ -51,38 +61,44 @@ class UserPickerField extends BasePickerField
     }
 
     /**
-     * @inheritdoc 
+     * @inheritdoc
      */
     protected function getData()
     {
         $result = parent::getData();
         $allowMultiple = $this->maxSelection !== 1;
-        $result['placeholder'] = ($this->placeholder != null) ? $this->placeholder : Yii::t('UserModule.widgets_UserPickerField', 'Select {n,plural,=1{user} other{users}}', ['n' => ($allowMultiple) ? 2 : 1]);
-        
-        if($this->placeholder && !$this->placeholderMore) {
+        $result['placeholder'] = ($this->placeholder != null)
+            ? $this->placeholder
+            : Yii::t('UserModule.widgets_UserPickerField', 'Select {n,plural,=1{user} other{users}}',
+                ['n' => ($allowMultiple) ? 2 : 1]);
+
+        if ($this->placeholder && !$this->placeholderMore) {
             $result['placeholder-more'] = $this->placeholder;
         } else {
-            $result['placeholder-more'] = ($this->placeholderMore) ? $this->placeholderMore : Yii::t('UserModule.widgets_UserPickerField', 'Add more...');
+            $result['placeholder-more'] = ($this->placeholderMore) ? $this->placeholderMore
+                : Yii::t('UserModule.widgets_UserPickerField', 'Add more...');
         }
-        
+
         $result['no-result'] = Yii::t('UserModule.widgets_UserPickerField', 'No users found for the given query.');
 
         if ($this->maxSelection) {
-            $result['maximum-selected'] = Yii::t('UserModule.widgets_UserPickerField', 'This field only allows a maximum of {n,plural,=1{# user} other{# users}}.', ['n' => $this->maxSelection]);
+            $result['maximum-selected'] = Yii::t('UserModule.widgets_UserPickerField',
+                'This field only allows a maximum of {n,plural,=1{# user} other{# users}}.',
+                ['n' => $this->maxSelection]);
         }
         return $result;
     }
 
     /**
-     * @inheritdoc 
+     * @inheritdoc
      */
     protected function getItemText($item)
     {
-        return \yii\helpers\Html::encode($item->displayName);
+        return Html::encode($item->displayName);
     }
 
     /**
-     * @inheritdoc 
+     * @inheritdoc
      */
     protected function getItemImage($item)
     {

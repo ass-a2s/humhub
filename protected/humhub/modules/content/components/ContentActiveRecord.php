@@ -8,6 +8,11 @@
 
 namespace humhub\modules\content\components;
 
+use humhub\modules\content\models\Movable;
+use humhub\modules\topic\models\Topic;
+use humhub\modules\topic\widgets\TopicLabel;
+use humhub\modules\user\behaviors\Followable;
+use humhub\modules\user\models\User;
 use Yii;
 use yii\base\Exception;
 use humhub\modules\content\widgets\WallEntry;
@@ -45,11 +50,12 @@ use humhub\modules\content\interfaces\ContentOwner;
  * Note: If the underlying Content record cannot be saved or validated an Exception will thrown.
  *
  * @property Content $content
+ * @mixin Followable
+ * @property User $createdBy
  * @author Luke
  */
-class ContentActiveRecord extends ActiveRecord implements ContentOwner
+class ContentActiveRecord extends ActiveRecord implements ContentOwner, Movable
 {
-
     /**
      * @see \humhub\modules\content\widgets\WallEntry
      * @var string the WallEntry widget class
@@ -60,6 +66,14 @@ class ContentActiveRecord extends ActiveRecord implements ContentOwner
      * @var boolean should the originator automatically follows this content when saved.
      */
     public $autoFollow = true;
+
+    /**
+     * Note: this may not be implemented by legacy modules
+     *
+     * @var string related moduleId
+     * @since 1.3
+     */
+    protected $moduleId;
 
     /**
      * The stream channel where this content should displayed.
@@ -93,6 +107,20 @@ class ContentActiveRecord extends ActiveRecord implements ContentOwner
     public $silentContentCreation = false;
 
     /**
+     * @var Content used to cache the content relation in order to avoid the relation to be overwritten in the insert process
+     * @see https://github.com/humhub/humhub/issues/3110
+     * @since 1.3
+     */
+    protected $initContent;
+
+    /**
+     * @var bool defines if the Movable behaviour of this ContentContainerActiveRecord type is active.
+     * @see Content::move()
+     * @since 1.3
+     */
+    protected $canMove = false;
+
+    /**
      * ContentActiveRecord constructor accepts either an configuration array as first argument or an ContentContainerActiveRecord
      * and visibility settings.
      *
@@ -109,18 +137,18 @@ class ContentActiveRecord extends ActiveRecord implements ContentOwner
      * `$model = new MyContent($space1, ['myField' => 'value']);`
      *
      * @param array|ContentContainerActiveRecord $contentContainer either the configuration or contentcontainer
-     * @param int $visibility
+     * @param int|array $visibility
      * @param array $config
      */
     public function __construct($contentContainer = [], $visibility = null, $config = [])
     {
         if(is_array($contentContainer)) {
             parent::__construct($contentContainer);
-        } else if($contentContainer instanceof ContentContainerActiveRecord) {
+        } elseif($contentContainer instanceof ContentContainerActiveRecord) {
             $this->content->setContainer($contentContainer);
             if(is_array($visibility)) {
                 $config = $visibility;
-            } else if($visibility !== null) {
+            } elseif($visibility !== null) {
                 $this->content->visibility = $visibility;
             }
             parent::__construct($config);
@@ -135,7 +163,7 @@ class ContentActiveRecord extends ActiveRecord implements ContentOwner
     public function init()
     {
         parent::init();
-        $this->attachBehavior('FollowableBehavior', \humhub\modules\user\behaviors\Followable::className());
+        $this->attachBehavior('FollowableBehavior', Followable::class);
     }
 
     /**
@@ -148,12 +176,17 @@ class ContentActiveRecord extends ActiveRecord implements ContentOwner
          * @see Content
          */
         if ($name == 'content') {
-            $content = parent::__get('content');
-            if (!$this->isRelationPopulated('content') || $content === null) {
-                $content = new Content();
-                $this->populateRelation('content', $content);
+            $content = $this->initContent = (empty($this->initContent)) ? parent::__get('content') : $this->initContent;
+
+            if(!$content) {
+                $content = $this->initContent =  new Content();
                 $content->setPolymorphicRelation($this);
             }
+
+            if(!$this->isRelationPopulated('content')) {
+                $this->populateRelation('content', $content);
+            }
+
             return $content;
         }
         return parent::__get($name);
@@ -167,11 +200,11 @@ class ContentActiveRecord extends ActiveRecord implements ContentOwner
      */
     public function getContentName()
     {
-        return $this->className();
+        return static::class;
     }
 
     /**
-     * Can be used to define an icon for this content type.
+     * Can be used to define an icon for this content type e.g.: 'fa-calendar'.
      * @return string
      */
     public function getIcon()
@@ -191,26 +224,31 @@ class ContentActiveRecord extends ActiveRecord implements ContentOwner
      * }
      * ```
      *
-     * @param array $result
+     * @param array $labels
      * @param bool $includeContentName
      * @return Label[]|\string[] content labels used for example in wallentrywidget
      */
     public function getLabels($labels = [], $includeContentName = true)
     {
         if ($this->content->isPinned()) {
-            $labels[] = Label::danger(Yii::t('ContentModule.widgets_views_label', 'Pinned'))->sortOrder(100);
+            $labels[] = Label::danger(Yii::t('ContentModule.widgets_views_label', 'Pinned'))->icon('fa-map-pin')->sortOrder(100);
         }
 
         if($this->content->isArchived()) {
-            $labels[] = Label::warning(Yii::t('ContentModule.widgets_views_label', 'Archived'))->sortOrder(200);
+            $labels[] = Label::warning(Yii::t('ContentModule.widgets_views_label', 'Archived'))->icon('fa-archive')->sortOrder(200);
         }
 
         if ($this->content->isPublic()) {
-            $labels[] = Label::info(Yii::t('ContentModule.widgets_views_label', 'Public'))->sortOrder(300);
+            $labels[] = Label::info(Yii::t('ContentModule.widgets_views_label', 'Public'))->icon('fa-globe')->sortOrder(300);
         }
 
         if ($includeContentName) {
             $labels[] = Label::defaultType($this->getContentName())->icon($this->getIcon())->sortOrder(400);
+        }
+
+        foreach (Topic::findByContent($this->content)->all() as $topic) {
+            /** @var $topic Topic */
+            $labels[] = TopicLabel::forTopic($topic);
         }
 
         return Label::sort($labels);
@@ -234,24 +272,24 @@ class ContentActiveRecord extends ActiveRecord implements ContentOwner
      *
      * @since 1.2.1
      * @see ContentActiveRecord::$managePermission
-     * @return null|object
+     * @return null|object|string
      */
     public function getManagePermission()
     {
         if(!$this->hasManagePermission()) {
             return null;
-        } else if(is_string($this->managePermission)) { // Simple Permission class specification
+        } elseif(is_string($this->managePermission)) { // Simple Permission class specification
             return $this->managePermission;
-        } else if(is_array($this->managePermission)) {
+        } elseif(is_array($this->managePermission)) {
             if(isset($this->managePermission['class'])) { // ['class' => '...', 'callback' => '...']
                 $handler = $this->managePermission['class'].'::'.$this->managePermission['callback'];
                 return call_user_func($handler, $this);
             } else { // Simple Permission array specification
                 return $this->managePermission;
             }
-        } else if(is_callable($this->managePermission)) { // anonymous function
+        } elseif(is_callable($this->managePermission)) { // anonymous function
             return $this->managePermission($this);
-        } else if($this->managePermission instanceof BasePermission) {
+        } elseif($this->managePermission instanceof BasePermission) {
             return $this->managePermission;
         } else {
             return null;
@@ -274,6 +312,7 @@ class ContentActiveRecord extends ActiveRecord implements ContentOwner
      *
      * @param array $params optional parameters for WallEntryWidget
      * @return string
+     * @throws \Exception
      */
     public function getWallOut($params = [])
     {
@@ -298,7 +337,7 @@ class ContentActiveRecord extends ActiveRecord implements ContentOwner
             $widget = new $class;
             $widget->contentObject = $this;
             return $widget;
-        } else if(!empty($this->wallEntryClass)) {
+        } elseif(!empty($this->wallEntryClass)) {
             $class = $this->wallEntryClass;
             $widget = new $class;
             return $widget;
@@ -325,20 +364,6 @@ class ContentActiveRecord extends ActiveRecord implements ContentOwner
     /**
      * @inheritdoc
      */
-    public function afterDelete()
-    {
-
-        $content = Content::findOne(['object_id' => $this->id, 'object_model' => $this->className()]);
-        if ($content !== null) {
-            $content->delete();
-        }
-
-        parent::afterDelete();
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function afterSave($insert, $changedAttributes)
     {
         // Auto follow this content
@@ -348,7 +373,8 @@ class ContentActiveRecord extends ActiveRecord implements ContentOwner
 
         // Set polymorphic relation
         if ($insert) {
-            $this->content->object_model = $this->className();
+            $this->populateRelation('content', $this->initContent);
+            $this->content->object_model = static::getObjectModel();
             $this->content->object_id = $this->getPrimaryKey();
         }
 
@@ -356,6 +382,23 @@ class ContentActiveRecord extends ActiveRecord implements ContentOwner
         $this->content->save();
 
         parent::afterSave($insert, $changedAttributes);
+    }
+
+    public static function getObjectModel() {
+        return static::class;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterDelete()
+    {
+        $content = Content::findOne(['object_id' => $this->getPrimaryKey(), 'object_model' => static::getObjectModel()]);
+        if ($content !== null) {
+            $content->delete();
+        }
+
+        parent::afterDelete();
     }
 
     /**
@@ -367,26 +410,86 @@ class ContentActiveRecord extends ActiveRecord implements ContentOwner
     }
 
     /**
+     * Checks if the given user or the current logged in user if no user was given, is the owner of this content
+     * @param null $user
+     * @return bool
+     * @since 1.3
+     * @throws \Throwable
+     */
+    public function isOwner($user = null)
+    {
+        if (!$user && !Yii::$app->user->isGuest) {
+            $user = Yii::$app->user->getIdentity();
+        } elseif (!$user) {
+            return false;
+        }
+
+        return $this->content->created_by === $user->getId();
+
+    }
+
+    /**
      * Related Content model
      *
      * @return \yii\db\ActiveQuery|ActiveQueryContent
      */
     public function getContent()
     {
-        return $this->hasOne(Content::className(), ['object_id' => 'id'])
-            ->andWhere(['content.object_model' => self::className()]);
+        return $this->hasOne(Content::class, ['object_id' => 'id'])
+            ->andWhere(['content.object_model' => static::getObjectModel()]);
     }
 
     /**
      * Returns an ActiveQueryContent to find content.
      *
-     * @inheritdoc
+     * {@inheritdoc}
      * @return ActiveQueryContent
      */
     public static function find()
     {
-        return new ActiveQueryContent(get_called_class());
+        return new ActiveQueryContent(static::getObjectModel());
     }
-}
 
-?>
+    /**
+     * Returns the id of the module related to this content type
+     * Note: This may not be implemented by some legacy modules
+     *
+     * @since 1.3
+     */
+    public function getModuleId()
+    {
+        return $this->moduleId;
+    }
+
+    /**
+     * Can be overwritten to define additional model specific checks.
+     *
+     * This function should also validate all existing sub-content entries to prevent data inconsistency.
+     *
+     * > Note: Default checks for the underlying content are automatically handled within the [[Content::canMove()]]
+     * @param ContentContainerActiveRecord|null $container
+     * @return bool|string
+     */
+    public function canMove(ContentContainerActiveRecord $container = null)
+    {
+        if(!$this->canMove) {
+            return Yii::t('ContentModule.base', 'This content type can\'t be moved.');
+        }
+
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public final function move(ContentContainerActiveRecord $container = null, $force = false)
+    {
+        return $this->content->move($container, $force);
+    }
+
+    /**
+     * This function can be overwritten in order to define model specific logic as moving sub-content or other related
+     * @param ContentContainerActiveRecord|null $container
+     */
+    public function afterMove(ContentContainerActiveRecord $container = null) {}
+}

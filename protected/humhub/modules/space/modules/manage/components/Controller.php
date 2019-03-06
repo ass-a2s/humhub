@@ -8,29 +8,22 @@
 
 namespace humhub\modules\space\modules\manage\components;
 
-use humhub\modules\admin\permissions\ManageSpaces;
-use Yii;
-use yii\web\HttpException;
+use humhub\modules\content\components\ContentContainerController;
+use humhub\modules\content\components\ContentContainerControllerAccess;
+use humhub\modules\space\models\Space;
 
 /**
  * Default Space Manage Controller
  *
  * @author luke
  */
-class Controller extends \humhub\modules\content\components\ContentContainerController
+class Controller extends ContentContainerController
 {
-    /**
-     * @inheritdoc
-     */
-    public $hideSidebar = true;
 
-    
     protected function getAccessRules() {
         return [
             ['login'],
-            ['permission' => [
-                ManageSpaces::class
-            ]]
+            [ContentContainerControllerAccess::RULE_USER_GROUP_ONLY => [Space::USERGROUP_ADMIN]]
         ];
     }
 }

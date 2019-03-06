@@ -18,10 +18,14 @@
  */
 return [
     'Administrator:' => '',
+    'Archived' => '',
     'Moderator:' => '',
+    'Name' => '',
     'Owner:' => '',
+    'User invitations have been added to the queue' => '',
+    'User memberships have been added to the queue' => '',
+    '{count} members' => '',
     '<strong>Space</strong> followers' => '<strong>Vietas</strong> sekotāji',
-    'Could not delete user who is a space owner! Name of Space: {spaceName}' => 'Nav iespējams dzēst lietotāju, kurš ir vietas īpašnieks! Vietas nosaukums: {spaceName}',
     'Default' => 'Noklusēts',
     'Everyone can enter' => 'Visi var pievienoties',
     'Invite and request' => 'Ielūgt un pieprasīt',
@@ -33,7 +37,6 @@ return [
     'Public (Members & Guests)' => 'Publiska (Dalībnieki un Viesi)',
     'Public (Members only)' => 'Publiska (Tikai dalībnieki)',
     'Public (Registered users only)' => 'Publiska (Tikai reģistrēti lietotāji)',
-    'Public (Visible)' => 'Publiska (Redzama)',
     'Settings' => 'Uzstādījumi',
     'Space' => 'Vieta',
     'Visible for all (members and guests)' => 'Redzama visiem (dalībniekiem un viesiem)',

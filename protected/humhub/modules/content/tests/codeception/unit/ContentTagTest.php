@@ -21,7 +21,7 @@ use humhub\modules\content\models\ContentTag;
 use humhub\modules\content\models\ContentTagRelation;
 use humhub\modules\space\models\Space;
 use tests\codeception\_support\HumHubDbTestCase;
-use yii\base\InvalidParamException;
+use yii\base\InvalidArgumentException;
 
 class ContentTagTest extends HumHubDbTestCase
 {
@@ -106,6 +106,70 @@ class ContentTagTest extends HumHubDbTestCase
 
     }
 
+    public function testTagDeletionByModule()
+    {
+        $space2 = Space::findOne(2);
+        $this->assertTrue($this->createTestTag('testTag1'));
+        $this->assertTrue($this->createTestTag('testTag2'));
+        $this->assertTrue($this->createTestTag('testTag3', $space2));
+
+        $this->assertEquals(3, TestTag::find()->count());
+
+        TestTag::deleteByModule();
+
+        $this->assertEquals(0, TestTag::find()->count());
+    }
+
+    public function testTagDeletionByModule2()
+    {
+        $space2 = Space::findOne(2);
+        $this->assertTrue($this->createTestTag('testTag1'));
+        $this->assertTrue($this->createTestTag('testTag2'));
+        $this->assertTrue($this->createTestTag('testTag3', $space2));
+
+        $this->assertEquals(3, TestTag::find()->count());
+
+        TestTag::deleteByModule($space2);
+
+        $this->assertEquals(2, TestTag::find()->count());
+    }
+
+    public function testTagDeletionByModuleAndContainer()
+    {
+        $space2 = Space::findOne(2);
+        $this->assertTrue($this->createTestTag('testTag1'));
+        $this->assertTrue($this->createTestTag('testTag2'));
+        $this->assertTrue($this->createTestTag('testTag3', $space2));
+
+        $this->assertEquals(3, TestTag::find()->count());
+
+        TestTag::deleteByModule($space2);
+
+        $this->assertEquals(2, TestTag::find()->count());
+    }
+
+    public function testDeleteAll()
+    {
+        $space2 = Space::findOne(2);
+        $this->assertTrue($this->createTestTag('testTag1'));
+        $this->assertTrue($this->createTestTag('testTag2'));
+        $this->assertTrue($this->createTestTag('testTag3', $space2));
+        $this->assertTrue($this->createTestTag('testTag4', $space2));
+
+        $this->assertTrue($this->createOtherTestTag('testTagA'));
+        $this->assertTrue($this->createOtherTestTag('testTagB'));
+        $this->assertTrue($this->createOtherTestTag('testTagC', $space2));
+
+        $this->assertEquals(4, count(TestTag::findAll(null)));
+        $this->assertEquals(3, count(TestTagSameModule::findAll(null)));
+
+        $count = TestTagSameModule::deleteAll();
+        $this->assertEquals(3, $count);
+
+        $this->assertEquals(4, count(TestTag::findAll(null)));
+        $this->assertEquals(0, count(TestTagSameModule::findAll(null)));
+    }
+
     public function testContentDeletion()
     {
         $content = Content::findOne(1);
@@ -128,7 +192,7 @@ class ContentTagTest extends HumHubDbTestCase
         try {
             $content->addTag($tag);
             $this->assertTrue(false);
-        } catch(InvalidParamException $e) {
+        } catch(InvalidArgumentException $e) {
             // Tag was not saved
             $this->assertTrue(true);
         }
@@ -138,7 +202,7 @@ class ContentTagTest extends HumHubDbTestCase
         try {
             $content->addTag($tag);
             $this->assertTrue(false);
-        } catch(InvalidParamException $e) {
+        } catch(InvalidArgumentException $e) {
             // Tag assigned with invalid container_id
             $this->assertTrue(true);
         }
@@ -212,6 +276,4 @@ class ContentTagTest extends HumHubDbTestCase
         $tag = new TestTagOtherModule($container, $name);
         return $tag->save();
     }
-
-
 }

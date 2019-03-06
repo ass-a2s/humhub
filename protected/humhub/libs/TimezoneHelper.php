@@ -11,7 +11,6 @@ namespace humhub\libs;
 use DateTime;
 use DateTimeZone;
 
-
 /**
  * TimezoneHelpers
  *
@@ -42,7 +41,7 @@ class TimezoneHelper
             DateTimeZone::PACIFIC,
         ];
 
-        if($includeUTC) {
+        if ($includeUTC) {
             $regions[] = DateTimeZone::UTC;
         }
 
@@ -58,7 +57,6 @@ class TimezoneHelper
         }
 
         // sort timezone by timezone name
-        #ksort($timezone_offsets);
         asort($timezone_offsets);
 
         $timezone_list = [];
@@ -71,14 +69,11 @@ class TimezoneHelper
 
             $t = new DateTimeZone($timezone);
             $c = new DateTime(null, $t);
-            #$current_time = Yii::$app->formatter->asTime($c, 'short'); #;
             $current_time = $c->format('H:i');
 
-            #$timezone_list[$timezone] = $pretty_offset." - ".$current_time."  - ".$timezone;
-            $timezone_list[$timezone] = $pretty_offset . " - " . $timezone;
+            $timezone_list[$timezone] = $pretty_offset . ' - ' . $timezone;
         }
 
         return $timezone_list;
     }
-
 }

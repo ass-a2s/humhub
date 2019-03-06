@@ -9,6 +9,8 @@
 namespace humhub\modules\post\models;
 
 use Yii;
+use humhub\libs\MarkdownPreview;
+use humhub\modules\content\widgets\richtext\RichText;
 use humhub\modules\content\components\ContentActiveRecord;
 use humhub\modules\search\interfaces\Searchable;
 use humhub\modules\user\models\User;
@@ -27,11 +29,20 @@ use humhub\modules\user\models\User;
  */
 class Post extends ContentActiveRecord implements Searchable
 {
-
     /**
      * @inheritdoc
      */
     public $wallEntryClass = 'humhub\modules\post\widgets\WallEntry';
+
+    /**
+     * @inheritdoc
+     */
+    public $moduleId = 'post';
+
+    /**
+     * @inheritdoc
+     */
+    public $canMove = true;
 
     /**
      * @inheritdoc
@@ -58,9 +69,6 @@ class Post extends ContentActiveRecord implements Searchable
      */
     public function beforeSave($insert)
     {
-        // Prebuild Previews for URLs in Message
-        \humhub\models\UrlOembed::preload($this->message);
-
         // Check if Post Contains an Url
         if (preg_match('/http(.*?)(\s|$)/i', $this->message)) {
             // Set Filter Flag
@@ -77,11 +85,7 @@ class Post extends ContentActiveRecord implements Searchable
     {
 
         parent::afterSave($insert, $changedAttributes);
-
-        // Handle mentioned users
-        \humhub\modules\user\models\Mentioning::parse($this, $this->message);
-
-        return true;
+        RichText::postProcess($this->message, $this);
     }
 
     /**
@@ -92,6 +96,9 @@ class Post extends ContentActiveRecord implements Searchable
         return Yii::t('PostModule.models_Post', 'post');
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getLabels($result = [], $includeContentName = true)
     {
         return parent::getLabels($result, false);
@@ -100,9 +107,17 @@ class Post extends ContentActiveRecord implements Searchable
     /**
      * @inheritdoc
      */
+    public function getIcon()
+    {
+        return 'fa-comment';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getContentDescription()
     {
-        return $this->message;
+        return (new MarkdownPreview())->parse($this->message);
     }
 
     /**
@@ -110,11 +125,11 @@ class Post extends ContentActiveRecord implements Searchable
      */
     public function getSearchAttributes()
     {
-        $attributes = array(
+        $attributes = [
             'message' => $this->message,
             'url' => $this->url,
             'user' => $this->getPostAuthorName()
-        );
+        ];
 
         $this->trigger(self::EVENT_SEARCH_ADD, new \humhub\modules\search\events\SearchAddEvent($attributes));
 

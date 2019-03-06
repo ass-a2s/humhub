@@ -85,7 +85,8 @@ humhub.module('ui.loader', function (module, require, $) {
     var getInstance = function (cfg, $this) {
         cfg = cfg || {};
 
-        var $result = $(DEFAULT_LOADER_SELECTOR).clone().removeAttr('id').show();
+        // TODO use div template instead of clone
+        var $result = (cfg.span) ? $(module.template) : $(DEFAULT_LOADER_SELECTOR).clone().removeAttr('id').show();
 
         if (cfg['cssClass']) {
             $result.addClass(cfg['cssClass']);
@@ -148,7 +149,7 @@ humhub.module('ui.loader', function (module, require, $) {
         // Added support for html5 inputs e.g. email validation
         $('input').on('invalid', function () {
             $(this).closest('form').find('[data-ui-loader]').each(function () {
-                reset(this);
+                setTimeout(reset, 10, this);
             });
         });
     };

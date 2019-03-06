@@ -1,6 +1,6 @@
 <?php
 
-use humhub\widgets\ActiveForm;
+use yii\bootstrap\ActiveForm;
 use yii\bootstrap\Html;
 ?>
 <?php $this->beginContent('@user/views/account/_userProfileLayout.php'); ?>
@@ -19,7 +19,7 @@ use yii\bootstrap\Html;
     <?php echo $form->field($model, 'newPasswordConfirm')->passwordInput(['maxlength' => 45]); ?>
 
     <hr>
-    <?php echo Html::submitButton(Yii::t('UserModule.views_account_changePassword', 'Save'), array('class' => 'btn btn-primary', 'data-ui-loader' => '')); ?>
+    <?php echo Html::submitButton(Yii::t('UserModule.views_account_changePassword', 'Save'), ['class' => 'btn btn-primary', 'data-ui-loader' => '']); ?>
 
     <?php echo \humhub\widgets\DataSaved::widget(); ?>
     <?php ActiveForm::end(); ?>

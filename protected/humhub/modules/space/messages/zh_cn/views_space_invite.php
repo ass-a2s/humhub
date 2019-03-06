@@ -17,6 +17,8 @@
  * NOTE: this file must be saved in UTF-8 encoding.
  */
 return [
+    'Add users without invitation' => '',
+    'Select all registered users' => '',
     '<strong>Invite</strong> members' => '<strong>邀请</strong> 成员',
     'Done' => '执行',
     'Email addresses' => '邮件地址',

@@ -9,13 +9,18 @@ Yii::setAlias('@webroot', realpath(__DIR__ . '/../../../'));
 Yii::setAlias('@app', '@webroot/protected');
 Yii::setAlias('@humhub', '@app/humhub');
 Yii::setAlias('@config', '@app/config');
+Yii::setAlias('@themes', '@webroot/themes');
 
 $config = [
     'name' => 'HumHub',
-    'version' => '1.2.5',
+    'version' => '1.3.11',
     'basePath' => dirname(__DIR__) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR,
-    'bootstrap' => ['log', 'humhub\components\bootstrap\ModuleAutoLoader', 'queue'],
+    'bootstrap' => ['log', 'humhub\components\bootstrap\ModuleAutoLoader', 'queue', 'humhub\modules\ui\view\bootstrap\ThemeLoader'],
     'sourceLanguage' => 'en',
+    'aliases' => [
+        '@bower' => '@vendor/bower-asset',
+        '@npm' => '@vendor/npm-asset',
+    ],
     'components' => [
         'moduleManager' => [
             'class' => '\humhub\components\ModuleManager'
@@ -53,13 +58,13 @@ $config = [
                 ],
             ],
         ],
-        'search' => array(
+        'search' => [
             'class' => 'humhub\modules\search\engine\ZendLuceneSearch',
-        ),
-        'settings' => array(
+        ],
+        'settings' => [
             'class' => 'humhub\components\SettingsManager',
             'moduleId' => 'base',
-        ),
+        ],
         'i18n' => [
             'class' => 'humhub\components\i18n\I18N',
             'translations' => [
@@ -76,6 +81,10 @@ $config = [
                     'basePath' => '@humhub/messages'
                 ],
                 'widgets_views_markdownEditor' => [
+                    'class' => 'yii\i18n\PhpMessageSource',
+                    'basePath' => '@humhub/messages'
+                ],
+                'humhub.yii' => [
                     'class' => 'yii\i18n\PhpMessageSource',
                     'basePath' => '@humhub/messages'
                 ],
@@ -99,7 +108,7 @@ $config = [
             'view' => [
                 'class' => '\yii\web\View',
                 'theme' => [
-                    'class' => '\humhub\components\Theme',
+                    'class' => '\humhub\modules\ui\view\components\Theme',
                     'name' => 'HumHub'
                 ],
             ],
@@ -110,9 +119,9 @@ $config = [
             'bundles' => require(__DIR__ . '/' . (YII_ENV_PROD || YII_ENV_TEST ? 'assets-prod.php' : 'assets-dev.php')),
         ],
         'view' => [
-            'class' => '\humhub\components\View',
+            'class' => '\humhub\modules\ui\view\components\View',
             'theme' => [
-                'class' => '\humhub\components\Theme',
+                'class' => '\humhub\modules\ui\view\components\Theme',
                 'name' => 'HumHub',
             ],
         ],
@@ -121,7 +130,7 @@ $config = [
             'dsn' => 'mysql:host=localhost;dbname=humhub',
             'username' => '',
             'password' => '',
-            'charset' => 'utf8',
+            'charset' => 'utf8mb4',
             'enableSchemaCache' => true,
             'on afterOpen' => ['humhub\libs\Helpers', 'SqlMode'],
         ],
@@ -130,13 +139,20 @@ $config = [
             'clients' => [],
         ],
         'queue' => [
-            'class' => 'humhub\components\queue\driver\Sync',
+            'class' => 'humhub\modules\queue\driver\MySQL',
+        ],
+        'urlManager' => [
+            'class' => 'humhub\components\UrlManager',
         ],
         'live' => [
             'class' => 'humhub\modules\live\components\Sender',
             'driver' => [
-                'class' => 'humhub\modules\live\driver\Database',
+                'class' => 'humhub\modules\live\driver\Poll',
             ],
+        ],
+        'mutex' => [
+
+            'class' => 'yii\mutex\MysqlMutex'
         ],
     ],
     'params' => [
@@ -186,6 +202,8 @@ $config = [
             'lv' => 'Latvijas',
             'sl' => 'Slovenščina',
             'hr' => 'Hrvatski',
+            'am' => 'አማርኛ',
+            'fi' => 'Suomi',
         ],
         'ldap' => [
             // LDAP date field formats
@@ -228,7 +246,11 @@ $config = [
         'tour' => [
             'acceptableNames' => ['interface', 'administration', 'profile', 'spaces']
         ],
+        'richText' => [
+            'class' => 'humhub\modules\content\widgets\richtext\ProsemirrorRichText',
+        ],
         'enablePjax' => true,
+        'dailyCronExecutionTime' => '18:00',
     ]
 ];
 

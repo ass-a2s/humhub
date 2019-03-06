@@ -1,6 +1,6 @@
 <?php
 return array (
-  'This user account is not approved yet!' => 'Deze account is nog niet goedgekeurd!',
-  'User not found!' => 'Gebruiker niet gevonden!',
-  'You need to login to view this user profile!' => 'Je moet ingelogd zijn om dit profiel te bekijken!',
+  'This profile is no longer available!' => 'Dit profiel is niet langer beschikbaar!',
+  'This user account is not approved yet!' => 'Dit account is nog niet goedgekeurd!',
+  'You need to login to view this user profile!' => 'U moet ingelogd zijn om dit profiel te bekijken!',
 );

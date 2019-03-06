@@ -8,7 +8,6 @@
 
 namespace humhub\modules\directory\controllers;
 
-use humhub\components\behaviors\AccessControl;
 use humhub\modules\directory\components\UserPostsStreamAction;
 use humhub\modules\directory\components\Controller;
 use humhub\modules\user\models\Group;
@@ -34,7 +33,6 @@ use Yii;
  */
 class DirectoryController extends Controller
 {
-
     /**
      * @inheritdoc
      */
@@ -52,24 +50,11 @@ class DirectoryController extends Controller
     /**
      * @inheritdoc
      */
-    public function behaviors()
-    {
-        return [
-            'acl' => [
-                'class' => AccessControl::className(),
-                'guestAllowedActions' => ['groups', 'index', 'members', 'spaces', 'user-posts', 'stream']
-            ]
-        ];
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function actions()
     {
         return [
             'stream' => [
-                'class' => UserPostsStreamAction::className(),
+                'class' => UserPostsStreamAction::class,
                 'mode' => UserPostsStreamAction::MODE_NORMAL,
             ],
         ];
@@ -104,7 +89,7 @@ class DirectoryController extends Controller
         }
 
         $searchOptions = [
-            'model' => User::className(),
+            'model' => User::class,
             'page' => $page,
             'pageSize' => $this->module->pageSize,
         ];
@@ -124,9 +109,9 @@ class DirectoryController extends Controller
                     'pageSize' => $searchResultSet->pageSize
         ]);
 
-        Event::on(Sidebar::className(), Sidebar::EVENT_INIT, function ($event) {
-            $event->sender->addWidget(NewMembers::className(), [], ['sortOrder' => 10]);
-            $event->sender->addWidget(MemberStatistics::className(), [], ['sortOrder' => 20]);
+        Event::on(Sidebar::class, Sidebar::EVENT_INIT, function ($event) {
+            $event->sender->addWidget(NewMembers::class, [], ['sortOrder' => 10]);
+            $event->sender->addWidget(MemberStatistics::class, [], ['sortOrder' => 20]);
         });
 
         return $this->render('members', [
@@ -150,7 +135,7 @@ class DirectoryController extends Controller
         $page = (int) Yii::$app->request->get('page', 1);
 
         $searchResultSet = Yii::$app->search->find($keyword, [
-            'model' => Space::className(),
+            'model' => Space::class,
             'page' => $page,
             'sortField' => ($keyword == '') ? 'title' : null,
             'pageSize' => $this->module->pageSize,
@@ -161,9 +146,9 @@ class DirectoryController extends Controller
                 'pageSize' => $searchResultSet->pageSize
         ]);
 
-        Event::on(Sidebar::className(), Sidebar::EVENT_INIT, function ($event) {
-            $event->sender->addWidget(NewSpaces::className(), [], ['sortOrder' => 10]);
-            $event->sender->addWidget(SpaceStatistics::className(), [], ['sortOrder' => 20]);
+        Event::on(Sidebar::class, Sidebar::EVENT_INIT, function ($event) {
+            $event->sender->addWidget(NewSpaces::class, [], ['sortOrder' => 10]);
+            $event->sender->addWidget(SpaceStatistics::class, [], ['sortOrder' => 20]);
         });
 
         return $this->render('spaces', [
@@ -186,8 +171,8 @@ class DirectoryController extends Controller
 
         $groups = Group::getDirectoryGroups();
 
-        Event::on(Sidebar::className(), Sidebar::EVENT_INIT, function ($event) {
-            $event->sender->addWidget(GroupStatistics::className(), [], ['sortOrder' => 10]);
+        Event::on(Sidebar::class, Sidebar::EVENT_INIT, function ($event) {
+            $event->sender->addWidget(GroupStatistics::class, [], ['sortOrder' => 10]);
         });
 
         return $this->render('groups', [

@@ -1,13 +1,11 @@
 <?php
 return array (
-  'Add Groups...' => '',
-  'Become this user' => '',
+  'Add Groups...' => 'Csoportok hozzáadása',
   'Delete' => 'Törlés',
-  'Disabled' => '',
-  'Enabled' => '',
+  'Disabled' => 'Kikapcsolva',
+  'Enabled' => 'Bekapcsolva',
   'Save' => 'Mentés',
-  'Select Groups' => '',
-  'Unapproved' => '',
-  'User not found!' => 'Użytkownik nie znaleziony. ',
-  'You cannot delete yourself!' => '',
+  'Select Groups' => 'Csoportok kiválasztása',
+  'Unapproved' => 'Nincs elfogadva',
+  'User not found!' => 'A felhasználó nem található!',
 );

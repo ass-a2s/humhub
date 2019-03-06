@@ -1,14 +1,21 @@
 <?php
 return array (
   '<strong>Modify</strong> your profile image' => '<strong>Wijzig</strong> mijn profiel-afbeelding',
-  '<strong>Modify</strong> your title image' => '<strong>Wijzig</strong> mijn titel afbeelding',
+  '<strong>Modify</strong> your title image' => '<strong>Wijzig</strong> mijn titel-afbeelding',
   '<strong>Security</strong> settings' => '<strong>Privacy</strong> instellingen',
   '<strong>User</strong> settings' => '<strong>Gebruiker</strong> instellingen',
   '<strong>Your</strong> profile' => '<strong>Mijn</strong> profiel',
+  'All your personal data will be irrevocably deleted.' => 'Al uw persoonlijke gegevens worden permanent verwijderd.',
+  'Are you sure that you want to delete your account?' => 'Weet u zeker dat u uw account wilt verwijderen?',
+  'Delete account' => 'Account verwijderen',
   'E-Mail Summaries' => 'E-mail samenvattingen',
+  'Enter your password to continue' => 'Voer uw wachtwoord in om door te gaan',
   'Not registered users' => 'Niet-geregistreerde gebruikers',
   'Notifications' => 'Notificaties',
   'Other users' => 'Andere gebruikers',
   'Users' => 'Gebruikers',
+  'You are currently the owner of following spaces:' => 'U bent momenteel de eigenaar van de volgende ruimtes:',
+  'You must transfer ownership or delete these spaces before you can delete your account.' => 'U moet het eigendom overdragen of deze ruimtes verwijderen voordat u uw account kunt verwijderen.',
+  'Your account cannot be deleted!' => 'Uw account kan niet worden verwijderd!',
   'Your friends' => 'Mijn vrienden',
 );

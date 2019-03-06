@@ -74,17 +74,16 @@ class Password extends ActiveRecord
     {
         return [
             [['newPassword', 'newPasswordConfirm'], 'required', 'on' => 'registration'],
-            [['newPassword', 'newPasswordConfirm'], 'trim'],
+            [['newPassword', 'newPasswordConfirm'], 'string', 'min' => 5, 'max' => 255],
             [['user_id'], 'integer'],
             [['password', 'salt'], 'string'],
             [['created_at'], 'safe'],
             [['algorithm'], 'string', 'max' => 20],
-            [['currentPassword'], CheckPasswordValidator::className(), 'on' => 'changePassword'],
+            [['currentPassword'], CheckPasswordValidator::class, 'on' => 'changePassword'],
             [['newPassword', 'newPasswordConfirm', 'currentPassword'], 'required', 'on' => 'changePassword'],
             [['newPassword', 'newPasswordConfirm'], 'string', 'min' => 5, 'max' => 255, 'on' => 'changePassword'],
             [['newPassword'], 'unequalsCurrentPassword', 'on' => 'changePassword'],
-            [['newPasswordConfirm'], 'compare', 'compareAttribute' => 'newPassword', 'on' => 'changePassword'],
-            [['newPasswordConfirm'], 'compare', 'compareAttribute' => 'newPassword', 'on' => 'registration'],
+            [['newPasswordConfirm'], 'compare', 'compareAttribute' => 'newPassword', 'on' => ['registration', 'changePassword']],
         ];
     }
     
@@ -96,7 +95,7 @@ class Password extends ActiveRecord
      */
     public function unequalsCurrentPassword($attribute, $params)
     {
-        if($this->newPassword === $this->currentPassword) {
+        if ($this->newPassword === $this->currentPassword) {
             $this->addError($attribute, Yii::t('UserModule.base', 'Your new password must not be equal your current password!'));
         }
     }
@@ -186,7 +185,7 @@ class Password extends ActiveRecord
 
     public function getUser()
     {
-        return $this->hasOne(User::className(), ['id' => 'user_id']);
+        return $this->hasOne(User::class, ['id' => 'user_id']);
     }
 
 }

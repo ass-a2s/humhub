@@ -51,9 +51,9 @@ class Like extends ContentAddonActiveRecord
     {
         return [
             [
-                'class' => \humhub\components\behaviors\PolymorphicRelation::className(),
+                'class' => \humhub\components\behaviors\PolymorphicRelation::class,
                 'mustBeInstanceOf' => [
-                    \yii\db\ActiveRecord::className(),
+                    \yii\db\ActiveRecord::class,
                 ]
             ]
         ];
@@ -64,10 +64,10 @@ class Like extends ContentAddonActiveRecord
      */
     public function rules()
     {
-        return array(
-            array(['object_model', 'object_id'], 'required'),
-            array(['id', 'object_id', 'target_user_id'], 'integer'),
-        );
+        return [
+            [['object_model', 'object_id'], 'required'],
+            [['id', 'object_id', 'target_user_id'], 'integer'],
+        ];
     }
 
     /**
@@ -79,7 +79,7 @@ class Like extends ContentAddonActiveRecord
         $cacheValue = Yii::$app->cache->get($cacheId);
 
         if ($cacheValue === false) {
-            $newCacheValue = Like::findAll(array('object_model' => $objectModel, 'object_id' => $objectId));
+            $newCacheValue = Like::findAll(['object_model' => $objectModel, 'object_id' => $objectId]);
             Yii::$app->cache->set($cacheId, $newCacheValue, Yii::$app->settings->get('cache.expireTime'));
             return $newCacheValue;
         } else {

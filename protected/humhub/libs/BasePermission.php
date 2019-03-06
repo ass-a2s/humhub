@@ -10,7 +10,7 @@ namespace humhub\libs;
 
 use humhub\modules\space\models\Space;
 use Yii;
-use yii\base\Object;
+use yii\base\BaseObject;
 use yii\base\Exception;
 
 /**
@@ -18,7 +18,7 @@ use yii\base\Exception;
 
  * @author luke
  */
-class BasePermission extends Object
+class BasePermission extends BaseObject
 {
 
     /**
@@ -163,9 +163,9 @@ class BasePermission extends Object
      */
     protected function getConfiguredState($groupId)
     {
-        if (isset(Yii::$app->params['defaultPermissions'][self::className()]) &&
-            isset(Yii::$app->params['defaultPermissions'][self::className()][$groupId])) {
-                return Yii::$app->params['defaultPermissions'][self::className()][$groupId];
+        if (isset(Yii::$app->params['defaultPermissions'][static::class]) &&
+            isset(Yii::$app->params['defaultPermissions'][static::class][$groupId])) {
+            return Yii::$app->params['defaultPermissions'][static::class][$groupId];
         }
 
         return null;
@@ -208,5 +208,4 @@ class BasePermission extends Object
 
         throw new Exception('Invalid permission state');
     }
-
 }

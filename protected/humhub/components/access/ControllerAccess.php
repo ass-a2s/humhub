@@ -8,11 +8,10 @@
 
 namespace humhub\components\access;
 
-use humhub\libs\BasePermission;
-use humhub\modules\user\models\User;
 use Yii;
-use yii\base\InvalidParamException;
-use yii\base\Object;
+use humhub\modules\user\models\User;
+use yii\base\InvalidArgumentException;
+use yii\base\BaseObject;
 use yii\web\Controller;
 
 /**
@@ -103,7 +102,7 @@ use yii\web\Controller;
  * @see AccessValidator
  * @since 1.2.2
  */
-class ControllerAccess extends Object
+class ControllerAccess extends BaseObject
 {
     /**
      * Allows the action rule setting only by extra option ['myRule', 'actions' => ['action1', 'action2']]
@@ -364,7 +363,7 @@ class ControllerAccess extends Object
             ]);
         }
 
-        throw new InvalidParamException('Invalid validator settings given for rule '.$ruleName);
+        throw new InvalidArgumentException('Invalid validator settings given for rule '.$ruleName);
     }
 
     /**
@@ -424,7 +423,7 @@ class ControllerAccess extends Object
      */
     public function validatePostRequest()
     {
-        return Yii::$app->request->method == 'POST';
+        return Yii::$app->request->isPost;
     }
 
     /**
@@ -442,7 +441,9 @@ class ControllerAccess extends Object
      */
     public function validateDisabledUser()
     {
-        return $this->isGuest() || $this->user->status !== User::STATUS_DISABLED;
+        return $this->isGuest() ||
+            ($this->user->status !== User::STATUS_DISABLED &&
+            $this->user->status !== User::STATUS_SOFT_DELETED);
     }
 
     /**

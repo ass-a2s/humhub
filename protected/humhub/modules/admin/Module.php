@@ -49,6 +49,17 @@ class Module extends \humhub\components\Module
     public $dailyCheckForNewVersion = true;
 
     /**
+     * @var boolean allow admins to impersonate other users
+     */
+    public $allowUserImpersonate = true;
+
+    /**
+     * @since 1.3.2
+     * @var boolean show incomplete setup warning on the dashboard for admins
+     */
+    public $showDashboardIncompleteSetupWarning = true;
+
+    /**
      * @inheritdoc
      */
     public function getName()

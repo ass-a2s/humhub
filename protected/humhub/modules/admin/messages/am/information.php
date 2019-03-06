@@ -1,0 +1,23 @@
+<?php
+return array (
+  '<strong>CronJob</strong> Status' => '<strong>የበክሮን ስራ</strong> ሁኔታ',
+  '<strong>Queue</strong> Status' => '<strong>የተራ</strong> ሁኔታ',
+  'About HumHub' => 'ስለ HumHub',
+  'Background Jobs' => 'ዳራዊ ስራ',
+  'Database' => 'ዳታቤዝ',
+  'Database migration results:' => 'የዳታቤዝ ሽግግር ውጤቶች፡',
+  'Delayed' => 'ዘግይቷል',
+  'Done' => 'ተከናውኗል',
+  'Driver' => 'አንቀሳቃሽ',
+  'Last run (daily):' => 'የመጨረሻ እንቅስቃሴ (ዕለታዊ)',
+  'Last run (hourly):' => 'የመጨረሻ እንቅስቃሴ (በየሰዓቱ)',
+  'Logging' => 'የምዝገባ ማስታወሻ',
+  'Never' => 'ፈፅሞ',
+  'Please refer to the documentation to setup the cronjobs and queue workers.' => 'እባክዎን የክሮንስራውን እና የተራ ስራውን ለማስተካከል ሰነዱን ይመልከቱ።',
+  'Prerequisites' => 'ቅድመ ሁኔታዎች',
+  'Queue successfully cleared.' => 'ተራው በተሳካ ሁኔታ ተወግዷል።',
+  'Reserved' => 'የተያዘ',
+  'Search index rebuild in progress.' => 'የፍለጋ ማውጫው ዳግም ግንባታ በሂደት ላይ ነው።',
+  'The current main HumHub database name is ' => 'አሁን ያለው ዋነኛ የHumHub ዳታቤዝ ስም',
+  'Waiting' => 'በጥበቃ ላይ...',
+);

@@ -1,0 +1,23 @@
+<?php
+return array (
+  '<strong>CronJob</strong> Status' => '<strong>Ajastettujen tehtävien</strong> Tila',
+  '<strong>Queue</strong> Status' => '<strong>Jono</strong> Tila',
+  'About HumHub' => 'Tietoja',
+  'Background Jobs' => 'Taustatiedot',
+  'Database' => 'Tietokanta',
+  'Database migration results:' => 'Tietokannan muuttoksentulokset:',
+  'Delayed' => 'Myöhästyneet',
+  'Done' => 'Valmis',
+  'Driver' => 'Ohelmisto',
+  'Last run (daily):' => 'Viimeisin tehty tehtävä (Päivä):',
+  'Last run (hourly):' => 'Viimeisin tehty tehtävä (Tunti):',
+  'Logging' => 'Valvonta',
+  'Never' => 'Ei koskaan',
+  'Please refer to the documentation to setup the cronjobs and queue workers.' => 'Tutustu dokumentaatioon cronjobs- ja jonotyöntekijöiden asettamiseksi.',
+  'Prerequisites' => 'Edellytykset',
+  'Queue successfully cleared.' => 'Jono tyhjennetiin onnistuneesti',
+  'Reserved' => 'Varattu',
+  'Search index rebuild in progress.' => 'Hakemiston järjestely käynnissä.',
+  'The current main HumHub database name is ' => 'Järjestelmän tämän hetkisen tietokannan nimi',
+  'Waiting' => 'Odottaa',
+);

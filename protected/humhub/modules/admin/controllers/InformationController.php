@@ -8,9 +8,16 @@
 
 namespace humhub\modules\admin\controllers;
 
-use Yii;
 use humhub\modules\admin\components\Controller;
+use humhub\modules\admin\components\DatabaseInfo;
 use humhub\modules\admin\libs\HumHubAPI;
+use humhub\modules\queue\driver\MySQL;
+use humhub\modules\queue\helpers\QueueHelper;
+use humhub\modules\queue\interfaces\QueueInfoInterface;
+use humhub\modules\search\jobs\RebuildIndex;
+use ReflectionClass;
+use ReflectionException;
+use Yii;
 
 /**
  * Informations
@@ -42,7 +49,7 @@ class InformationController extends Controller
     public function getAccessRules()
     {
         return [
-            ['permissions' => \humhub\modules\admin\permissions\SeeAdminInformation::className()]
+            ['permissions' => \humhub\modules\admin\permissions\SeeAdminInformation::class],
         ];
     }
 
@@ -62,7 +69,7 @@ class InformationController extends Controller
             'currentVersion' => Yii::$app->version,
             'latestVersion' => $latestVersion,
             'isNewVersionAvailable' => $isNewVersionAvailable,
-            'isUpToDate' => $isUpToDate
+            'isUpToDate' => $isUpToDate,
         ]);
     }
 
@@ -73,27 +80,72 @@ class InformationController extends Controller
 
     public function actionDatabase()
     {
-        return $this->render('database', ['migrate' => \humhub\commands\MigrateController::webMigrateAll()]);
+        $databaseInfo = new DatabaseInfo(Yii::$app->db->dsn);
+
+        $rebuildSearchJob = new RebuildIndex();
+        if (Yii::$app->request->isPost && Yii::$app->request->get('rebuildSearch') == 1) {
+            Yii::$app->queue->push($rebuildSearchJob);
+        }
+
+        return $this->render(
+            'database',
+            [
+                'rebuildSearchRunning' => QueueHelper::isQueued($rebuildSearchJob),
+                'databaseName' => $databaseInfo->getDatabaseName(),
+                'migrate' => \humhub\commands\MigrateController::webMigrateAll(),
+            ]
+        );
     }
 
     /**
      * Caching Options
      */
-    public function actionCronjobs()
+    public function actionBackgroundJobs()
     {
-        $currentUser = '';
-        if (function_exists('get_current_user')) {
-            $currentUser = get_current_user();
+        $lastRunHourly = (int) Yii::$app->settings->getUncached('cronLastHourlyRun');
+        $lastRunDaily = (int) Yii::$app->settings->getUncached('cronLastDailyRun');
+
+        $queue = Yii::$app->queue;
+
+        $canClearQueue = false;
+        if ($queue instanceof MySQL) {
+            $canClearQueue = true;
+            if (Yii::$app->request->isPost && Yii::$app->request->get('clearQueue') == 1) {
+                $queue->clear();
+                $this->view->setStatusMessage('success', Yii::t('AdminModule.information', 'Queue successfully cleared.'));
+            }
         }
 
-        $lastRunHourly = Yii::$app->settings->getUncached('cronLastHourlyRun');
-        $lastRunDaily = Yii::$app->settings->getUncached('cronLastDailyRun');
+        $waitingJobs = null;
+        $delayedJobs = null;
+        $doneJobs = null;
+        $reservedJobs = null;
 
+        if ($queue instanceof QueueInfoInterface) {
+            /** @var QueueInfoInterface $queue */
+            $waitingJobs = $queue->getWaitingJobCount();
+            $delayedJobs = $queue->getDelayedJobCount();
+            $doneJobs = $queue->getDoneJobCount();
+            $reservedJobs = $queue->getReservedJobCount();
+        }
 
-        return $this->render('cronjobs', [
+        $driverName = null;
+        try {
+            $reflect = new ReflectionClass($queue);
+            $driverName = $reflect->getShortName();
+        } catch (ReflectionException $e) {
+            Yii::error('Could not determine queue driver: '. $e->getMessage());
+        }
+
+        return $this->render('background-jobs', [
             'lastRunHourly' => $lastRunHourly,
             'lastRunDaily' => $lastRunDaily,
-            'currentUser' => $currentUser
+            'waitingJobs' => $waitingJobs,
+            'delayedJobs' => $delayedJobs,
+            'doneJobs' => $doneJobs,
+            'reservedJobs' => $reservedJobs,
+            'driverName' => $driverName,
+            'canClearQueue' => $canClearQueue
         ]);
     }
 

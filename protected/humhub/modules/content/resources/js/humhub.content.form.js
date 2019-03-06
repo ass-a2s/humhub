@@ -20,20 +20,24 @@ humhub.module('content.form', function(module, require, $) {
     object.inherits(CreateForm, Widget);
 
     CreateForm.prototype.init = function() {
-        this.$.hide();
+        var that = this;
 
+        this.$.hide();
         // Hide options by default
         $('.contentForm_options').hide();
+
         $('#contentFormError').hide();
 
         this.setDefaultVisibility();
-
         this.$.fadeIn('fast');
 
         if(!module.config['disabled']) {
-            // Remove info text from the textinput
-            $('#contentFormBody').on('click.humhub:content:form dragover.humhub:content:form', function() {
-                // Hide options by default
+            $('#contentFormBody').on('click.humhub:content:form dragover.humhub:content:form', function(evt) {
+                // Prevent fading in for topic remove button clicks
+                if($(evt.target).closest('.topic-remove-label').length) {
+                    return;
+                }
+
                 $('.contentForm_options').fadeIn();
             });
         } else {
@@ -51,7 +55,7 @@ humhub.module('content.form', function(module, require, $) {
             that.$.find(".preferences, .fileinput-button").show();
             $('.contentForm_options .preferences, .fileinput-button').show();
             if(!response.errors) {
-                event.trigger('humhub:modules:content:newEntry', response.output);
+                event.trigger('humhub:content:newEntry', response.output);
                 that.resetForm();
             } else {
                 that.handleError(response);
@@ -75,21 +79,34 @@ humhub.module('content.form', function(module, require, $) {
         $contentForm.filter('textarea').val('').trigger('autosize.resize');
         $contentForm.attr('checked', false);
 
-        this.resetNotifyUser();
+        this.resetSettingInputs();
         this.setDefaultVisibility();
         this.resetFilePreview();
+        this.resetFileUpload();
 
         $('#public').attr('checked', false);
         $('#contentFormBody').find('.humhub-ui-richtext').trigger('clear');
     };
 
-    CreateForm.prototype.resetNotifyUser = function() {
+    CreateForm.prototype.resetSettingInputs = function() {
         $('#notifyUserContainer').hide();
         Widget.instance('#notifyUserInput').reset();
+        $('#postTopicContainer').hide();
+        Widget.instance('#postTopicInput').reset();
     };
 
     CreateForm.prototype.resetFilePreview = function() {
-        Widget.instance($('#contentFormFiles_preview')).reset();
+        var preview = Widget.instance($('#contentFormFiles_preview'));
+        if(preview) {
+            preview.reset();
+        }
+    };
+
+    CreateForm.prototype.resetFileUpload = function() {
+        var upload = Widget.instance($('#contentForm_message-file-upload'));
+        if(upload) {
+            upload.reset();
+        }
     };
 
     CreateForm.prototype.handleError = function(response) {
@@ -139,6 +156,11 @@ humhub.module('content.form', function(module, require, $) {
     CreateForm.prototype.notifyUser = function() {
         $('#notifyUserContainer').show();
         Widget.instance('#notifyUserInput').focus();
+    };
+
+    CreateForm.prototype.setTopics = function() {
+        $('#postTopicContainer').show();
+        Widget.instance('#postTopicInput').focus();
     };
 
     var init = function() {

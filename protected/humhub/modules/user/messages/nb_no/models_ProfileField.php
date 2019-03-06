@@ -13,6 +13,7 @@ return array (
   'Invalid field type!' => 'Ugyldig felttype!',
   'LDAP Attribute' => 'LDAP attributt',
   'Module' => 'Modul',
+  'Must contain at least one character.' => 'Må inneholde minst ett tegn.',
   'Only alphanumeric characters allowed!' => 'Kun alfanumeriske tegn kan benyttes!',
   'Profile Field Category' => 'Profil Felt Kategori',
   'Required' => 'Påkrevd',

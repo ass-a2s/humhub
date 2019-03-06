@@ -12,6 +12,7 @@ humhub.module('ui.additions', function (module, require, $) {
     var richtext = require('ui.richtext', true);
 
     var _additions = {};
+    var _order = [];
 
     /**
      * Registers an addition for a given jQuery selector. There can be registered
@@ -30,6 +31,14 @@ humhub.module('ui.additions', function (module, require, $) {
                 'selector': selector,
                 'handler': handler
             };
+
+            if(options.after && _additions[options.after]) {
+                _order.splice(_order.indexOf(options.after) + 1, 0, id);
+            } else if(options.before &&  _additions[options.before]) {
+                _order.splice(_order.indexOf(options.before), 0, id);
+            } else {
+                _order.push(id);
+            }
 
             // Make sure additions registrated after humhub:ready also affect element
             if (humhub.initialized) {
@@ -50,12 +59,17 @@ humhub.module('ui.additions', function (module, require, $) {
         options = options || {};
 
         var $element = (element instanceof $) ? element : $(element);
-        $.each(_additions, function (id) {
+
+        $.each(_order, function (index, id) {
             // Only apply certain filter if filter option is set
-            if (options.filter && !options.filter.indexOf(id)) {
+            if ((options.filter && options.filter.indexOf(id) < 0) || (options.include && options.include.indexOf(id) < 0)) {
                 return;
             }
-            
+
+            if (options.exclude && options.exclude.indexOf(id) >= 0) {
+                return;
+            }
+
             try {
                 module.apply($element, id);
             } catch (e) {
@@ -79,12 +93,12 @@ humhub.module('ui.additions', function (module, require, $) {
         }
 
         var $match = $element.find(addition.selector).addBack(addition.selector);
-        
+
         // only apply addition if we actually find a match
-        if(!$match.length) {
+        if (!$match.length) {
             return;
         }
-        
+
         addition.handler.apply($match, [$match, $element]);
     };
 
@@ -92,14 +106,34 @@ humhub.module('ui.additions', function (module, require, $) {
         event.on('humhub:ready', function (evt) {
             module.applyTo($('body'));
         });
-        
-        require('action').registerHandler('copyToClipboard', function(evt) {
-            clipboard.writeText(evt.$target.text()).then(function() {
+
+        require('action').registerHandler('copyToClipboard', function (evt) {
+            clipboard.writeText(evt.$target.text()).then(function () {
                 require('ui.status').success(module.text('success.clipboard'));
-            }).catch(function(err) {
+            }).catch(function (err) {
                 require('ui.status').error(module.text('error.clipboard'), true);
             });
         });
+
+        // Workaround: Bootstrap bug with dropdowns in responsive tables
+        // See: https://github.com/twbs/bootstrap/issues/11037
+        $(document).on('shown.bs.dropdown', '.table-responsive', function (e) {
+            var t = $(this),
+                    m = $(e.target).find('.dropdown-menu'),
+                    tb = t.offset().top + t.height(),
+                    mb = m.offset().top + m.outerHeight(true),
+                    d = 20; // Space for shadow + scrollbar.   
+            if (t[0].scrollWidth > t.innerWidth()) {
+                if (mb + d > tb) {
+                    t.css('padding-bottom', ((mb + d) - tb));
+                }
+            } else {
+                t.css('overflow', 'visible');
+            }
+        }).on('hidden.bs.dropdown', '.table-responsive', function () {
+            $(this).css({'padding-bottom': '', 'overflow': ''});
+        });
+
 
         // workaround for jp-player since it sets display to inline which results in a broken view...
         $(document).on('click.humhub-jp-play', '.jp-play', function () {
@@ -110,9 +144,17 @@ humhub.module('ui.additions', function (module, require, $) {
         module.register('autosize', '.autosize', function ($match) {
             $match.autosize();
         });
-        
+
         module.register('select2', '[data-ui-select2]', function ($match) {
-            $match.select2({theme:"humhub"});
+            $match.select2({theme: "humhub"});
+        });
+
+        module.register('highlightCode', 'pre code', function($match) {
+            $match.each(function (i, e) {
+                if(window.hljs) {
+                    hljs.highlightBlock(e);
+                }
+            });
         });
 
         // Show tooltips on elements
@@ -141,7 +183,7 @@ humhub.module('ui.additions', function (module, require, $) {
             $match.loader();
         });
     };
-    
+
     var extend = function (id, handler, options) {
         options = options || {};
 
@@ -179,7 +221,7 @@ humhub.module('ui.additions', function (module, require, $) {
 
         // Jquery date picker div is not removed...
         $('#ui-datepicker-div').remove();
-        
+
         $('.popover').remove();
         $('.tooltip').remove();
     };
@@ -217,12 +259,12 @@ humhub.module('ui.additions', function (module, require, $) {
         var $node = $(node);
         node = $node[0];
         var observer = new MutationObserver(function (mutations) {
-            mutations.forEach(function(mutation) {
+            mutations.forEach(function (mutation) {
                 var $nodes = $(mutation.addedNodes).filter(function () {
-                    return this.nodeType === 1; // filter out text nodes
+                    return this.nodeType === 1 && !$(this).closest('.humhub-ui-richtext').length; // filter out text nodes and ignore richtext changes
                 });
 
-                $nodes.each(function() {
+                $nodes.each(function () {
                     var $this = $(this);
                     module.applyTo($this);
                 })

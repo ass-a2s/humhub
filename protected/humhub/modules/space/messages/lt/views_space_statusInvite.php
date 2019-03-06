@@ -17,7 +17,5 @@
  * NOTE: this file must be saved in UTF-8 encoding.
  */
 return [
-    'User has become a member.' => 'Vartotojas tapo nariu.',
-    'User has been invited.' => 'Vartotojas pakviestas.',
-    'User has not been invited.' => 'Vartotojas nebuvo pakviestas.',
+    'Users has been invited.' => '',
 ];

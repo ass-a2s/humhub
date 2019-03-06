@@ -46,6 +46,11 @@ class StreamSuppressQuery extends StreamQuery
     protected $suppressionsOnly = false;
 
     /**
+     * @var bool this flag will disable the suppression behaviour if set to true
+     */
+    protected $preventSuppression = false;
+
+    /**
      * @var int size of suppression row lookup
      */
     public $suppressionScanSize = 300;
@@ -82,6 +87,7 @@ class StreamSuppressQuery extends StreamQuery
     {
         // Only suppress on 3 or more contents to deliever
         if ($this->limit < 3 || $this->isSingleContentQuery()) {
+            $this->isQueryExecuted = true;
             return parent::all();
         }
 
@@ -166,7 +172,7 @@ class StreamSuppressQuery extends StreamQuery
     protected function isSuppressed(&$results, $content)
     {
         // Do not surpress if only particual contents are displayed
-        if (!empty($this->_includes)) {
+        if ($this->preventSuppression || !empty($this->includes)) {
             return false;
         }
 

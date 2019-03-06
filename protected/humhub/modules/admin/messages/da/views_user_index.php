@@ -18,13 +18,9 @@
  */
 return [
     'Actions' => '',
-    'Group Manager' => '',
     'Send invite' => '',
-    'This overview contains a list of each registered user with actions to view, edit and delete users.' => '',
     'Add new user' => 'Tilføj ny bruger',
-    'Last login' => 'Seneste login',
     'Overview' => 'Oversigt',
     'Settings' => 'Indstillinger',
     'Users' => 'Brugere',
-    'never' => 'Aldrig',
 ];

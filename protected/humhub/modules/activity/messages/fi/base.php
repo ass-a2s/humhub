@@ -1,0 +1,23 @@
+<?php
+return array (
+  '<strong>E-Mail</strong> Summaries' => '<strong>Ilmoitukset</strong>',
+  'Activities' => 'Toiminta',
+  'Daily' => 'Päivittäin',
+  'E-Mail Summaries' => 'Sähköposti yhteenvedot',
+  'E-Mail summaries are sent to inform you about recent activities in the network.' => 'Ilmoituksia lähetetään sinulle viimeisimmistä toimista.',
+  'E-Mail summaries are sent to users to inform them about recent activities in your network.' => 'Ilmoituksia lähetetään käyttäjille ilmoittamaan heille viimeisimmistä toimista.',
+  'Exclude spaces below from the mail summary' => 'Sulje pois viestien yhteenvedosta alla olevat sivut',
+  'Hourly' => 'Tunneittain',
+  'Interval' => 'Aikaväli',
+  'Latest news' => 'Viimeiset uutiset',
+  'Never' => 'Ei koskaan',
+  'On this page you can configure the contents and the interval of these e-mail updates.' => 'Tällä sivulla voit määrittää näiden sähköpostipäivitysten sisällön ja aikavälin.',
+  'On this page you can define the default behavior for your users. These settings can be overwritten by users in their account settings page.' => 'Tällä sivulla voit määrittää käyttäjien oletusasetukset. Käyttäjät voivat korvata nämä asetukset sivun asetussivullaan.',
+  'Only include spaces below to the mail summary' => 'Sisällyttää vain sivuja postin yhteenvetoon',
+  'Reset to defaults' => 'Palauta oletukset',
+  'Spaces' => 'Sivut',
+  'Weekly' => 'Viikoittain',
+  'You will only receive an e-mail if there is something new.' => 'Saat sähköpostia vain, jos on jotain uutta.',
+  'Your daily summary' => 'Sinun päivittäinen yhteenveto',
+  'Your weekly summary' => 'Sinun viikoittain yhteenveto',
+);

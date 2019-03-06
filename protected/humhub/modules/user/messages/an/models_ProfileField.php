@@ -17,10 +17,6 @@
  * NOTE: this file must be saved in UTF-8 encoding.
  */
 return [
-    'Created at' => '',
-    'Created by' => '',
-    'Description' => '',
-    'Editable' => '',
     'Field Type could not be changed!' => '',
     'Fieldtype' => '',
     'ID' => '',
@@ -30,6 +26,7 @@ return [
     'Invalid field type!' => '',
     'LDAP Attribute' => '',
     'Module' => '',
+    'Must contain at least one character.' => '',
     'Only alphanumeric characters allowed!' => '',
     'Profile Field Category' => '',
     'Required' => '',
@@ -41,5 +38,9 @@ return [
     'Updated at' => '',
     'Updated by' => '',
     'Visible' => '',
+    'Created at' => 'Creyau o',
+    'Created by' => 'Creyau per',
+    'Description' => 'Descripción',
+    'Editable' => 'Editable',
     'Title' => 'Titulek',
 ];

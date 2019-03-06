@@ -3,6 +3,8 @@
 use yii\helpers\Url;
 use yii\helpers\Html;
 use humhub\widgets\GridView;
+use humhub\modules\user\grid\ImageColumn;
+use humhub\modules\user\grid\DisplayNameColumn;
 ?>
 
 <div class="panel-body">
@@ -13,27 +15,25 @@ use humhub\widgets\GridView;
     </div>
 
     <?=
-	GridView::widget([
+    GridView::widget([
         'dataProvider' => $dataProvider,
-        'filterModel' => $searchModel,
         'columns' => [
-            'username',
+            ['class' => ImageColumn::class],
+            ['class' => DisplayNameColumn::class],
             'email',
-            'profile.firstname',
-            'profile.lastname',
+            'created_at',
             [
-                'header' => Yii::t('AdminModule.views_approval_index', 'Actions'),
                 'class' => 'yii\grid\ActionColumn',
-                'options' => ['width' => '150px'],
+                'options' => ['width' => '200px'],
                 'buttons' => [
-                    'view' => function() {
-                        return;
+                    'view' => function($url, $model) {
+                        return Html::a('Edit', Url::to(['/admin/user/edit', 'id' => $model->id]), ['class' => 'btn btn-default btn-sm', 'data-ui-loader' => '']);
                     },
                     'delete' => function($url, $model) {
-                        return Html::a('Decline', Url::toRoute(['decline', 'id' => $model->id]), ['class' => 'btn btn-danger btn-sm', 'data-ui-loader' => '']);
+                        return Html::a('Decline', Url::to(['decline', 'id' => $model->id]), ['class' => 'btn btn-danger btn-sm', 'data-ui-loader' => '']);
                     },
                     'update' => function($url, $model) {
-                        return Html::a('Approve', Url::toRoute(['approve', 'id' => $model->id]), ['class' => 'btn btn-primary btn-sm', 'data-ui-loader' => '']);
+                        return Html::a('Approve', Url::to(['approve', 'id' => $model->id]), ['class' => 'btn btn-success btn-sm', 'data-ui-loader' => '']);
                     },
                 ],
             ],

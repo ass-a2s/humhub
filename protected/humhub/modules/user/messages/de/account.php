@@ -1,14 +1,21 @@
 <?php
 return array (
-  '<strong>Modify</strong> your profile image' => 'Profilbild <strong>bearbeiten</strong> ',
-  '<strong>Modify</strong> your title image' => 'Titelbild <strong>bearbeiten</strong> ',
+  '<strong>Modify</strong> your profile image' => 'Profilbild <strong>bearbeiten</strong>',
+  '<strong>Modify</strong> your title image' => 'Titelbild <strong>bearbeiten</strong>',
   '<strong>Security</strong> settings' => '<strong>Sicherheits</strong>-Einstellungen',
   '<strong>User</strong> settings' => '<strong>Benutzer</strong> Einstellungen',
   '<strong>Your</strong> profile' => '<strong>Dein</strong> Profil',
+  'All your personal data will be irrevocably deleted.' => 'Alle Deine persönlichen Daten werden unwiderruflich gelöscht.',
+  'Are you sure that you want to delete your account?' => 'Bist Du sicher, dass Du Dein Benutzerkonto löschen möchtest?',
+  'Delete account' => 'Benutzerkonto löschen',
   'E-Mail Summaries' => 'E-Mail-Zusammenfassung',
+  'Enter your password to continue' => 'Gebe Dein Passwort ein, um fortzufahren',
   'Not registered users' => 'Keine registrierten Benutzer',
   'Notifications' => 'Benachrichtungen',
   'Other users' => 'Andere Benutzer',
   'Users' => 'Benutzer',
+  'You are currently the owner of following spaces:' => 'Du bist derzeit Besitzer von folgenden Spaces:',
+  'You must transfer ownership or delete these spaces before you can delete your account.' => 'Bevor das Benutzerkonto gelöscht werden kann, musst Du den Besitz über diese Space auf einen anderen Benutzer übertragen.',
+  'Your account cannot be deleted!' => 'Dein Benutzerkonto kann nicht gelöscht werden!',
   'Your friends' => 'Deine Freunde',
 );

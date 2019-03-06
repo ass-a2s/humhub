@@ -9,8 +9,8 @@
 namespace humhub\components\i18n;
 
 use Yii;
+use yii\base\InvalidArgumentException;
 use humhub\models\forms\ChooseLanguage;
-use yii\base\InvalidParamException;
 
 /**
  * I18N provides features related with internationalization (I18N) and localization (L10N).
@@ -24,6 +24,15 @@ class I18N extends \yii\i18n\I18N
      * @var string path which contains message overwrites
      */
     public $messageOverwritePath = '@config/messages';
+
+    /**
+     * Languages which are not supported by Yii.
+     * To overwrite this languages, a language file called "humhub.yii.php"
+     * needs to be placed in the messages folder.
+     *
+     * @var array list of languages
+     */
+    public $unsupportedYiiLanguages = ['an'];
 
     /**
      * Automatically sets the current locale and time zone
@@ -46,7 +55,7 @@ class I18N extends \yii\i18n\I18N
     public function setUserLocale($user)
     {
         if ($user === null) {
-            throw new InvalidParamException('User cannot be null!');
+            throw new InvalidArgumentException('User cannot be null!');
         }
 
         if (!empty($user->language)) {
@@ -99,7 +108,7 @@ class I18N extends \yii\i18n\I18N
      */
     public function setDefaultLocale()
     {
-        $this->setLocale( Yii::$app->settings->get('defaultLanguage'));
+        $this->setLocale(Yii::$app->settings->get('defaultLanguage'));
         $this->fixLocaleCodes();
     }
 
@@ -110,7 +119,7 @@ class I18N extends \yii\i18n\I18N
      */
     protected function setLocale($locale)
     {
-        if(!empty($locale)) {
+        if (!empty($locale)) {
             Yii::$app->language = $locale;
             Yii::$app->formatter->locale = $locale;
         }
@@ -134,6 +143,10 @@ class I18N extends \yii\i18n\I18N
 
         if ($language == 'nb_no' && $category == 'yii') {
             $language = 'nb-NO';
+        }
+
+        if ($category === 'yii' && in_array($language, $this->unsupportedYiiLanguages)) {
+            $category = 'humhub.yii';
         }
 
         return parent::translate($category, $message, $params, $language);
@@ -252,5 +265,4 @@ class I18N extends \yii\i18n\I18N
             $this->setLocale('en-US');
         }
     }
-
 }

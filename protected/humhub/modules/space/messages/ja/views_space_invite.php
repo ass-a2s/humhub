@@ -17,14 +17,16 @@
  * NOTE: this file must be saved in UTF-8 encoding.
  */
 return [
-    '<strong>Invite</strong> members' => '',
-    'Done' => '',
-    'Email addresses' => '',
-    'Invite by email' => '',
+    'Add users without invitation' => '',
     'New user?' => '',
     'Pick users' => '',
-    'To invite users to this space, please type their names below to find and pick them.' => '',
+    'Select all registered users' => '',
     'You can also invite external users, which are not registered now. Just add their e-mail addresses separated by comma.' => '',
+    '<strong>Invite</strong> members' => '<strong>メンバーを招待</strong>',
+    'Done' => '実行',
+    'Email addresses' => 'Eメールアドレス',
+    'Invite by email' => 'Eメールアドレスで招待する',
     'Login' => 'ログイン',
     'Send' => '送信',
+    'To invite users to this space, please type their names below to find and pick them.' => 'このスペースにメンバーを招待します。テキストボックに招待したいメンバーの名前を入力してください。',
 ];

@@ -1,27 +1,54 @@
-Testing (since v1.2)
-====================
+Testing
+=======
+
+## Getting Started
+
+Testing in Humhub/Yii extends the paradigm of unit testing by functional and acceptance tests. 
+
+**Acceptance tests** simulate actual user actions on a browser. By means of acceptance tests you can test your backend code as well as
+your javascript frontend, potentially on different browsers. The downside of acceptance tests is the longer execution time, 
+and a more complex implementation. Implement acceptance tests for general UI tests, ideally access all views and test Javascript based views.
+
+**Functional tests** are similar to acceptance tests, with the difference that functional tests do not run on an actual browser
+and do not execute any javascript. Functional tests allow easy testing of customized HTTP requests, forms and also allow direct access of
+application logic as database or the `Yii` application context. This can be handy if you require a specific application sate 
+as specific settings for a test. Write functional tests in order to test your controllers, forms and controller access for different configurations settings.
+
+**Unit tests** are ideal for [white box testing](https://en.wikipedia.org/wiki/White-box_testing) and is the fastest way of
+writing low level tests for specific classes or components. Implement unit tests for testing single components and classes.
+
+HumHub uses [Codeception](http://codeception.com/) as testing framework.
+
+*ATTENTION: Some of the test libraries are developed for use with PHP 7 only*
+
+Information about how to write tests with codeception are available here:
+
+ - [Codeception Introduction](http://codeception.com/docs/01-Introduction)
+ - [Yii Testing Guide](https://www.yiiframework.com/doc/guide/2.0/en/test-overview)
 
 ## Test Environment Setup
 
 -  Install codeception ([http://codeception.com/install](http://codeception.com/install))
--  Composer require codeception:
+-  Composer codeception:
 
 ```
 composer global require "codeception/codeception=2.0.*" "codeception/specify=*" "codeception/verify=*"
 ```
 
-- Create test Database:
+> Note: Instead of a global codeception installation you can also use the version fetched by composer 
+`protected/vendor/codeception/codeception`. The composer version is used when running the tests with grunt.
+
+- Create a test database:
 
 ```
-CREATE DATABASE `humhub_test` CHARACTER SET utf8 COLLATE utf8_general_ci;
+CREATE DATABASE `humhub_test` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
 - Configure database access:
 
 Configure the database connection for your test environment in `@humhub/tests/config/common.php`:
 
-
- 
+```
     'components' => [
 	    'db' => [
 	    'dsn' => 'mysql:host=localhost;dbname=humhub_test',
@@ -30,63 +57,58 @@ Configure the database connection for your test environment in `@humhub/tests/co
 		    'charset' => 'utf8',
     	], 
     ]
-
+```
 
 - Run Database Migrations:
-    
-    
-```cd protected/humhub/tests/codeception/bin```
+   
+```
+cd protected/humhub/tests/codeception/bin
+php yii migrate/up --includeModuleMigrations=1 --interactive=0
+```
 
-```php yii migrate/up --includeModuleMigrations=1 --interactive=0```
-
-```php yii installer/auto```
-
->Note: You'll have to run the migrations for your test environment manually in order to keep your test environment up to date.
+> Note: You'll have to run the migrations for your test environment manually in order to keep your test environment up to date.
 
 - Install test environment:
 
-```cd protected/humhub/tests/codeception/bin```
-
-```php yii migrate/up --includeModuleMigrations=1 --interactive=0```
-
-```php yii installer/auto```
+`php yii installer/auto`
 
 - Set `HUMHUB_PATH` system variable
 
-The `HUMHUB_PATH` is used by your test environment to determine the humhub root path.
+The `HUMHUB_PATH` is used by your test environment in non core module tests to determine the HumHub root.
 This is only required for non core module tests and can also be set in your modules test configuration `/tests/config/test.php`:
 
-    return [
-    	'humhub_root' => '/path/to/my/humhub/root',
-    ];
-
+```
+return [
+    'humhub_root' => '/path/to/my/humhub/root',
+];
+```
 
 ## Test configuration
 
-The settings of your default configuration files in your `humhub_root/protected/humhub/tests/config` directory can be overwritten for each module
+The settings of your default configuration files in the `$HUMHUB_PATH/protected/humhub/tests/config` directory can be overwritten for each module
 within the corresponding `<module_root>/tests/config` files.
 
 The following configuration files can be used to overwrite the test configuration:
 
- - The initial test configuration `test.php` is used to set general test configurations as the path to your `humhub_root` or used fixtures.
- - The configuration of `common.php` is used for all suites and can be overwritten by settings in a suite configuation.
- - Suite specific test configurations (e.g. functional.php) are used to configure humhub for suite tests.
+ - The initial test configuration `test.php` is used to set general test settings as the path to your `humhub_root` or used fixtures.
+ - The configuration of `common.php` is used for all suites and can be overwritten by settings in a suite configuration.
+ - Suite specific test configurations (e.g. functional.php) are used to configure HumHub for a specific test suite.
 
 The configurations for a suite will be merged in the following order:
 
- - @humhub/protected/humhub/tests/config/functional.php
- - @myModule/tests/config/common.php
- - @myModule/tests/config/functional.php
- - @myModule/tests/config/env/myenv/common.php (if exists)
- - @myModule/tests/config/env/myenv/functional.php (if exists) 
+ - `@humhub/protected/humhub/tests/config/functional.php`
+ - `@myModule/tests/config/common.php`
+ - `@myModule/tests/config/functional.php`
+ - `@myModule/tests/config/env/myenv/common.php (if exists)`
+ - `@myModule/tests/config/env/myenv/functional.php (if exists)`
 
-### Environments
+### Environment Configuration
 
-For running a test for a specific environment you'll have to set te `--env` argument for your testrun.
+For running a test for a specific environment you'll have to set te `--env` argument for your test-run.
 
 Example for running all functional tests of a tasks module in a master environment:
 
-1. Create a file `tasks/tests/config/env/master/test.php` with the following content:
+1. Create a file `@mymodule/tests/config/env/master/test.php` with the following content:
 
 ```
 return [
@@ -94,29 +116,83 @@ return [
 ];
 ```
 
-2. If needed set further humhub settings in `tasks/tests/config/env/master/funtional.php`
+2. If needed set further HumHub settings in `tasks/tests/config/env/master/funtional.php`
 3. Run `codecept run functional --env master`
 
->Note: Your modules test.php configuration file should always set an 'modules' array with all non core modules needed for test execution.
+> Note: Your modules test.php configuration file should always set an 'modules' array with all non core modules needed for test execution.
 
->Note: You can specify multiple --env arguments in codeception, for module tests the first --env argument must contain the environment of your
-humhub_root settings you want to use for this test run. 
+> Note: You can specify multiple --env arguments in codeception, for module tests the first --env argument must contain the environment of your
+`humhub_root` settings you want to use for this test run. 
 
 ## Run Tests:
 
+In order to run a test you can either use the conventional `codecept` command which requires a global installation,
+or the `grunt test` command. The `grunt test` command currently only works for core module tests.
+
 ### Run all core tests:
 
-´´´
+```
 cd protected/humhub/tests/
 codecept run
-´´´
+```
 
-### Run core module test
+or 
 
-´´´
-cd myModule/tests
+```
+grunt test
+```
+
+### Run single core module test
+
+```
+cd protected/humhub/modules/user/tests
+codecept run
+```
+
+or
+
+```
+grunt test --module=user
+```
+
+### Run specific suite
+
+```
+cd protected/humhub/modules/user/tests
 codecept run unit
-´´´
+```
+
+or
+
+```
+grunt test --module=user --suite=unit
+```
+
+### Run single test file
+
+```
+cd protected/humhub/modules/user/tests
+codecept run codeception/unit/FollowTest
+```
+
+or
+
+```
+grunt test --module=user --path=unit/FollowTest
+```
+
+### Run single test function
+
+```
+cd protected/humhub/modules/user/tests
+codecept run codeception/unit/FollowTest:testFollowUser
+```
+
+or
+
+```
+grunt test --module=user --path=unit/FollowTest:testFollowUser
+```
 
 ### Run non core module tests
 
@@ -127,42 +203,47 @@ In your `<yourmodule>/tests/config/test.php`:
 
 ```
 return [
-    // This should contain the root path of your humhub branch you want to test against
-    'humhub_root' => '/pathToHumHub',
     // This will enable all provided modules for the testenvironment
     'modules' => ['myModuleId']
 ];
 ```
 
-In your `<yourmodule>/tests/config/common.php`:
+You may also want to extend the `moduleAutoloadPath` in your `<yourmodule>/tests/config/common.php`:
 
 ```
 return [
     'params' => [
-        // This is a humhub configuration to include (but not enable) all modules within the given path
         'moduleAutoloadPaths' => ['/pathToMyModules']
     ]
 ];
 ```
 
-### Run single test
-
-```
-codecept run codeception/acceptance/TestCest:testFunction
-```
-
 ### Run acceptance tests
-#### with phantomjs
 
-- Run phantomjs server (is installed with composer update)
+`Phantom.js` or `Selenium` are required to run acceptance tests on your system.
 
-```cd protected/vendor/bin```
+> Note: If you are already running a webserver on port 8080, you do not need to start the test server described blow, because Humhub tests are run on port 8080. 
+However if your `DocumentRoot` directory is not configured to directly open HumHub via `localhost` you have to do some adjustments 
+in the `codeception.yml`  file of our `test` folder (`test-entry-url`) and the `acceptance.suite.yml` file. 
+Alternatively start the test server as described below (in humhub root directory).
 
-```phantomjs --webdriver=44444```
+#### Phantom.js
 
-#### with chrome driver (selenium)
+- Start a Phantom.js server:
 
-- Download chromedriver.exe and selenium standalone server jar and copy them in the same directory.
+```
+cd protected/vendor/bin
+phantomjs --webdriver=44444
+```
+
+#### With chrome driver/selenium (recommended)
+
+Download 
+
+ - [chromedriver](http://chromedriver.chromium.org/downloads) 
+ - [selenium standalone](https://www.seleniumhq.org/download/)
+  
+and copy them in the same directory.
 
 Start selenium:
 
@@ -172,11 +253,21 @@ java -Dwebdriver.chrome.driver=chromedriver.exe -jar selenium-server-standalone-
 
 Start test server:
 
-```cd /myhumHubInstallation```
+```
+cd /myhumHubInstallation
+php -S localhost:8080
+```
 
-```php -S localhost:8080```
+or
 
-run with chrome environment:
+```
+grunt test-server
+```
 
-```codecept run acceptance --env chrome```
+Run your acceptance test:
 
+```
+codecept run acceptance
+```
+
+> Note: The `grunt test` command only works for core tests.

@@ -6,4 +6,5 @@ return array (
   'File' => 'Datei',
   'No caching' => 'Kein Caching',
   'PHP APC(u) Extension missing - Type not available!' => 'PHP APC(u) Erweiterung nicht gefunden - Typ nicht verfügbar!',
+  'Redis' => 'Redis',
 );

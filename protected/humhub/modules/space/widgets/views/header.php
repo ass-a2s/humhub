@@ -1,7 +1,16 @@
 <?php
 /* @var $this \humhub\components\View */
+
 /* @var $currentSpace \humhub\modules\space\models\Space */
 
+use humhub\modules\space\widgets\FollowButton;
+use humhub\modules\space\widgets\HeaderControls;
+use humhub\modules\space\widgets\HeaderControlsMenu;
+use humhub\modules\space\widgets\HeaderCounterSet;
+use humhub\modules\space\widgets\Image;
+use humhub\modules\space\widgets\InviteButton;
+use humhub\modules\space\widgets\MembershipButton;
+use humhub\widgets\ModalConfirm;
 use yii\helpers\Html;
 
 if ($space->isAdmin()) {
@@ -18,7 +27,7 @@ if ($space->isAdmin()) {
         <div class="image-upload-container" style="width: 100%; height: 100%; overflow:hidden;">
             <!-- profile image output-->
             <img class="img-profile-header-background" id="space-banner-image"
-                 src="<?php echo $space->getProfileBannerImage()->getUrl(); ?>"
+                 src="<?= $space->getProfileBannerImage()->getUrl(); ?>"
                  width="100%" style="width: 100%;">
 
             <!-- check if the current user is the profile owner and can change the images -->
@@ -40,7 +49,7 @@ if ($space->isAdmin()) {
                 ?>
 
                 <div class="image-upload-loader" id="banner-image-upload-loader"
-                     style="padding: <?php echo $padding ?>;">
+                     style="padding: <?= $padding; ?>;">
                     <div class="progress image-upload-progess-bar" id="banner-image-upload-bar">
                         <div class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="00"
                              aria-valuemin="0"
@@ -53,9 +62,8 @@ if ($space->isAdmin()) {
 
             <!-- show user name and title -->
             <div class="img-profile-data">
-                <h1 class="space"><?php echo Html::encode($space->name); ?></h1>
-
-                <h2 class="space"><?php echo Html::encode($space->description); ?></h2>
+                <h1 class="space"><?= Html::encode($space->name); ?></h1>
+                <h2 class="space"><?= Html::encode($space->description); ?></h2>
             </div>
 
             <!-- check if the current user is the profile owner and can change the images -->
@@ -70,24 +78,23 @@ if ($space->isAdmin()) {
                            echo 'display: none;';
                        }
                        ?>"
-                       href="<?php echo $space->createUrl('/space/manage/image/crop-banner'); ?>"
+                       href="<?= $space->createUrl('/space/manage/image/crop-banner'); ?>"
                        class="btn btn-info btn-sm" data-target="#globalModal" data-backdrop="static"><i
                             class="fa fa-edit"></i></a>
-                        <?php
-                        echo humhub\widgets\ModalConfirm::widget(array(
-                            'uniqueID' => 'modal_bannerimagedelete',
-                            'linkOutput' => 'a',
-                            'title' => Yii::t('SpaceModule.widgets_views_deleteBanner', '<strong>Confirm</strong> image deleting'),
-                            'message' => Yii::t('SpaceModule.widgets_views_deleteBanner', 'Do you really want to delete your title image?'),
-                            'buttonTrue' => Yii::t('SpaceModule.widgets_views_deleteBanner', 'Delete'),
-                            'buttonFalse' => Yii::t('SpaceModule.widgets_views_deleteBanner', 'Cancel'),
-                            'linkContent' => '<i class="fa fa-times"></i>',
-                            'cssClass' => 'btn btn-danger btn-sm',
-                            'style' => $space->getProfileBannerImage()->hasImage() ? '' : 'display: none;',
-                            'linkHref' => $space->createUrl("/space/manage/image/delete", ['type' => 'banner']),
-                            'confirmJS' => 'function(jsonResp) { resetProfileImage(jsonResp); }'
-                        ));
-                        ?>
+                    <?= ModalConfirm::widget([
+                        'uniqueID' => 'modal_bannerimagedelete',
+                        'linkOutput' => 'a',
+                        'title' => Yii::t('SpaceModule.widgets_views_deleteBanner', '<strong>Confirm</strong> image deleting'),
+                        'message' => Yii::t('SpaceModule.widgets_views_deleteBanner', 'Do you really want to delete your title image?'),
+                        'buttonTrue' => Yii::t('SpaceModule.widgets_views_deleteBanner', 'Delete'),
+                        'buttonFalse' => Yii::t('SpaceModule.widgets_views_deleteBanner', 'Cancel'),
+                        'linkContent' => '<i class="fa fa-times"></i>',
+                        'cssClass' => 'btn btn-danger btn-sm',
+                        'style' => $space->getProfileBannerImage()->hasImage() ? '' : 'display: none;',
+                        'linkHref' => $space->createUrl('/space/manage/image/delete', ['type' => 'banner']),
+                        'confirmJS' => 'function(jsonResp) { resetProfileImage(jsonResp); }'
+                    ]);
+                    ?>
                 </div>
 
             <?php } ?>
@@ -98,10 +105,10 @@ if ($space->isAdmin()) {
             <?php if ($space->profileImage->hasImage()) : ?>
                 <!-- profile image output-->
                 <a data-ui-gallery="spaceHeader" href="<?= $space->profileImage->getUrl('_org'); ?>">
-                    <?php echo \humhub\modules\space\widgets\Image::widget(['space' => $space, 'width' => 140]); ?>
+                    <?= Image::widget(['space' => $space, 'width' => 140]); ?>
                 </a>
             <?php else : ?>
-                <?php echo \humhub\modules\space\widgets\Image::widget(['space' => $space, 'width' => 140]); ?>
+                <?= Image::widget(['space' => $space, 'width' => 140]); ?>
             <?php endif; ?>
 
             <!-- check if the current user is the profile owner and can change the images -->
@@ -121,32 +128,32 @@ if ($space->isAdmin()) {
                 </div>
 
                 <div class="image-upload-buttons" id="profile-image-upload-buttons">
-                    <a href="#" onclick="javascript:$('#profilefileupload input').click();" class="btn btn-info btn-sm"><i
-                            class="fa fa-cloud-upload"></i></a>
+                    <a href="#" onclick="javascript:$('#profilefileupload input').click();" class="btn btn-info btn-sm">
+                        <i class="fa fa-cloud-upload"></i>
+                    </a>
                     <a id="profile-image-upload-edit-button"
                        style="<?php
                        if (!$space->getProfileImage()->hasImage()) {
                            echo 'display: none;';
                        }
                        ?>"
-                       href="<?php echo $space->createUrl('/space/manage/image/crop'); ?>"
+                       href="<?= $space->createUrl('/space/manage/image/crop'); ?>"
                        class="btn btn-info btn-sm" data-target="#globalModal" data-backdrop="static"><i
                             class="fa fa-edit"></i></a>
-                        <?php
-                        echo humhub\widgets\ModalConfirm::widget(array(
-                            'uniqueID' => 'modal_profileimagedelete',
-                            'linkOutput' => 'a',
-                            'title' => Yii::t('SpaceModule.widgets_views_deleteImage', '<strong>Confirm</strong> image deleting'),
-                            'message' => Yii::t('SpaceModule.widgets_views_deleteImage', 'Do you really want to delete your profile image?'),
-                            'buttonTrue' => Yii::t('SpaceModule.widgets_views_deleteImage', 'Delete'),
-                            'buttonFalse' => Yii::t('SpaceModule.widgets_views_deleteImage', 'Cancel'),
-                            'linkContent' => '<i class="fa fa-times"></i>',
-                            'cssClass' => 'btn btn-danger btn-sm',
-                            'style' => $space->getProfileImage()->hasImage() ? '' : 'display: none;',
-                            'linkHref' => $space->createUrl("/space/manage/image/delete", array('type' => 'profile')),
-                            'confirmJS' => 'function(jsonResp) { resetProfileImage(jsonResp); }'
-                        ));
-                        ?>
+                    <?= ModalConfirm::widget([
+                        'uniqueID' => 'modal_profileimagedelete',
+                        'linkOutput' => 'a',
+                        'title' => Yii::t('SpaceModule.widgets_views_deleteImage', '<strong>Confirm</strong> image deleting'),
+                        'message' => Yii::t('SpaceModule.widgets_views_deleteImage', 'Do you really want to delete your profile image?'),
+                        'buttonTrue' => Yii::t('SpaceModule.widgets_views_deleteImage', 'Delete'),
+                        'buttonFalse' => Yii::t('SpaceModule.widgets_views_deleteImage', 'Cancel'),
+                        'linkContent' => '<i class="fa fa-times"></i>',
+                        'cssClass' => 'btn btn-danger btn-sm',
+                        'style' => $space->getProfileImage()->hasImage() ? '' : 'display: none;',
+                        'linkHref' => $space->createUrl('/space/manage/image/delete', ['type' => 'profile']),
+                        'confirmJS' => 'function(jsonResp) { resetProfileImage(jsonResp); }'
+                    ]);
+                    ?>
                 </div>
             <?php endif; ?>
 
@@ -158,52 +165,23 @@ if ($space->isAdmin()) {
     <div class="panel-body">
 
         <div class="panel-profile-controls">
-            <!-- start: User statistics -->
             <div class="row">
                 <div class="col-md-12">
-                    <div class="statistics pull-left">
-
-                        <div class="pull-left entry">
-                            <span class="count"><?= $postCount; ?></span>
-                            <br>
-                            <span
-                                class="title"><?= Yii::t('SpaceModule.widgets_views_profileHeader', 'Posts'); ?></span>
-                        </div>
-
-                        <a href="<?= $space->createUrl('/space/membership/members-list'); ?>" data-target="#globalModal">
-                            <div class="pull-left entry">
-                                <span class="count"><?= $space->getMemberships()->count(); ?></span>
-                                <br>
-                                <span
-                                    class="title"><?= Yii::t('SpaceModule.widgets_views_profileHeader', 'Members'); ?></span>
-                            </div>
-                        </a>
-                        <?php if ($followingEnabled): ?>
-                            <a href="<?= $space->createUrl('/space/space/follower-list'); ?>" data-target="#globalModal">
-                                <div class="pull-left entry">
-                                    <span class="count"><?= $space->getFollowerCount(); ?></span><br>
-                                    <span
-                                        class="title"><?= Yii::t('SpaceModule.widgets_views_profileHeader', 'Followers'); ?></span>
-                                </div>
-                            </a>
-                        <?php endif; ?>
-                    </div>
-                    <!-- end: User statistics -->
+                    <?= HeaderCounterSet::widget(['space' => $space]); ?>
 
                     <div class="controls controls-header pull-right">
-                        <?=
-                        humhub\modules\space\widgets\HeaderControls::widget(['widgets' => [
-                                [\humhub\modules\space\widgets\InviteButton::className(), ['space' => $space], ['sortOrder' => 10]],
-                                [\humhub\modules\space\widgets\MembershipButton::className(), ['space' => $space], ['sortOrder' => 20]],
-                                [\humhub\modules\space\widgets\FollowButton::className(), [
-                                        'space' => $space,
-                                        'followOptions' => ['class' => 'btn btn-primary'],
-                                        'unfollowOptions' => ['class' => 'btn btn-info']],
-                                    ['sortOrder' => 30]]
+                        <?= HeaderControls::widget(['widgets' => [
+                            [InviteButton::class, ['space' => $space], ['sortOrder' => 10]],
+                            [MembershipButton::class, ['space' => $space], ['sortOrder' => 20]],
+                            [FollowButton::class, [
+                                'space' => $space,
+                                'followOptions' => ['class' => 'btn btn-primary'],
+                                'unfollowOptions' => ['class' => 'btn btn-info']
+                            ],
+                                ['sortOrder' => 30]]
                         ]]);
                         ?>
-                        <?=
-                        humhub\modules\space\widgets\HeaderControlsMenu::widget([
+                        <?= HeaderControlsMenu::widget([
                             'space' => $space,
                             'template' => '@humhub/widgets/views/dropdownNavigation'
                         ]);
@@ -220,21 +198,22 @@ if ($space->isAdmin()) {
 </div>
 
 <!-- start: Error modal -->
-<div class="modal" id="uploadErrorModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-     aria-hidden="true">
+<div class="modal" id="uploadErrorModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-extra-small animated pulse">
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h4 class="modal-title"
-                    id="myModalLabel"><?php echo Yii::t('SpaceModule.widgets_views_profileHeader', '<strong>Something</strong> went wrong'); ?></h4>
+                <h4 class="modal-title" id="myModalLabel">
+                    <?= Yii::t('SpaceModule.widgets_views_profileHeader', '<strong>Something</strong> went wrong'); ?>
+                </h4>
             </div>
             <div class="modal-body text-center">
 
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary"
-                        data-dismiss="modal"><?php echo Yii::t('SpaceModule.widgets_views_profileHeader', 'Ok'); ?></button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal">
+                    <?= Yii::t('SpaceModule.widgets_views_profileHeader', 'Ok'); ?>
+                </button>
             </div>
         </div>
     </div>

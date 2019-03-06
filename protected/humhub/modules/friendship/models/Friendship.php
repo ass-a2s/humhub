@@ -84,7 +84,7 @@ class Friendship extends \humhub\components\ActiveRecord
      */
     public function getFriendUser()
     {
-        return $this->hasOne(User::className(), ['id' => 'friend_user_id']);
+        return $this->hasOne(User::class, ['id' => 'friend_user_id']);
     }
 
     /**
@@ -92,7 +92,7 @@ class Friendship extends \humhub\components\ActiveRecord
      */
     public function getUser()
     {
-        return $this->hasOne(User::className(), ['id' => 'user_id']);
+        return $this->hasOne(User::class, ['id' => 'user_id']);
     }
 
     /**
@@ -149,11 +149,11 @@ class Friendship extends \humhub\components\ActiveRecord
 
     /**
      * Returns a query for friends of a user
-     * 
+     *
      * @return \yii\db\ActiveQuery
-     * @param type $user
+     * @param User $user
      */
-    public static function getFriendsQuery($user)
+    public static function getFriendsQuery(User $user)
     {
         $query = User::find();
 
@@ -170,11 +170,11 @@ class Friendship extends \humhub\components\ActiveRecord
 
     /**
      * Returns a query for sent and not approved friend requests of an user
-     * 
+     *
+     * @param User $user
      * @return \yii\db\ActiveQuery
-     * @param type $user
      */
-    public static function getSentRequestsQuery($user)
+    public static function getSentRequestsQuery(User $user)
     {
         $query = User::find();
 

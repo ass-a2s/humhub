@@ -1,12 +1,13 @@
 <?php
 return array (
-  '<strong>Space</strong> followers' => 'persone che seguono lo <strong>Spazio</strong>',
+  '<strong>Space</strong> followers' => 'persone che seguono lo <strong>spazio</strong>',
   'Administrator:' => 'Amministratore:',
-  'Could not delete user who is a space owner! Name of Space: {spaceName}' => 'Non posso cancellare l\'utente che è proprietario di uno space! Nome dello Space: {spaceName}',
+  'Archived' => 'Archiviato',
   'Default' => 'Predefinito',
   'Everyone can enter' => 'Ognuno può entrare',
   'Invite and request' => 'Inviti e richieste',
   'Moderator:' => 'Moderatore:',
+  'Name' => 'Nome',
   'No spaces found.' => 'Nessun space trovato.',
   'Only by invite' => 'Solo per invito',
   'Owner:' => 'Proprietario:',
@@ -16,8 +17,10 @@ return array (
   'Public (Members & Guests)' => 'Pubblico (Membri e ospiti)',
   'Public (Members only)' => 'Pubblico (Solo membri)',
   'Public (Registered users only)' => 'Pubblico (Solo utenti registrati)',
-  'Public (Visible)' => 'Pubblico (Visibile)',
   'Settings' => 'Impostazioni',
   'Space' => 'Spazio',
+  'User invitations have been added to the queue' => 'Gli inviti per gli utenti sono stati aggiunti alla lista per l\'approvazione.',
+  'User memberships have been added to the queue' => 'La partecipazione è stata aggiunta alla lista per l\'approvazione.',
   'Visible for all (members and guests)' => 'Visibile a tutti (membri e ospiti)',
+  '{count} members' => '{count} membri',
 );

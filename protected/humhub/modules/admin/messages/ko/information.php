@@ -17,9 +17,24 @@
  * NOTE: this file must be saved in UTF-8 encoding.
  */
 return [
+    '<strong>CronJob</strong> Status' => '',
+    '<strong>Queue</strong> Status' => '',
     'About HumHub' => '',
-    'CronJobs' => '',
+    'Background Jobs' => '',
     'Database' => '',
+    'Database migration results:' => '',
+    'Delayed' => '',
+    'Done' => '',
+    'Driver' => '',
+    'Last run (daily):' => '',
+    'Last run (hourly):' => '',
     'Logging' => '',
+    'Never' => '',
+    'Please refer to the documentation to setup the cronjobs and queue workers.' => '',
     'Prerequisites' => '',
+    'Queue successfully cleared.' => '',
+    'Reserved' => '',
+    'Search index rebuild in progress.' => '',
+    'The current main HumHub database name is ' => '',
+    'Waiting' => '',
 ];

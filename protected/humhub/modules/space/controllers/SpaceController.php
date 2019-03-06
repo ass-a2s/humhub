@@ -8,9 +8,6 @@
 
 namespace humhub\modules\space\controllers;
 
-use Yii;
-use yii\web\HttpException;
-use yii\db\Expression;
 use humhub\modules\content\components\ContentContainerController;
 use humhub\components\behaviors\AccessControl;
 use humhub\modules\space\models\Space;
@@ -19,12 +16,17 @@ use humhub\modules\user\widgets\UserListBox;
 use humhub\modules\stream\actions\ContentContainerStream;
 use humhub\modules\space\widgets\Menu;
 use humhub\modules\post\permissions\CreatePost;
+use Yii;
+use yii\web\HttpException;
+use yii\db\Expression;
 
 /**
  * SpaceController is the main controller for spaces.
  *
  * It show the space itself and handles all related tasks like following or
  * memberships.
+ *
+ * @property-read Space $contentContainer
  *
  * @author Luke
  * @package humhub.modules_core.space.controllers
@@ -36,17 +38,12 @@ class SpaceController extends ContentContainerController
     /**
      * @inheritdoc
      */
-    public $hideSidebar = false;
-
-    /**
-     * @inheritdoc
-     */
     public function behaviors()
     {
         return [
             'acl' => [
-                'class' => AccessControl::className(),
-                'guestAllowedActions' => ['index', 'stream'],
+                'class' => AccessControl::class,
+                'guestAllowedActions' => ['index', 'home', 'stream']
             ]
         ];
     }
@@ -56,16 +53,17 @@ class SpaceController extends ContentContainerController
      */
     public function actions()
     {
-        return array(
-            'stream' => array(
-                'class' => ContentContainerStream::className(),
+        return [
+            'stream' => [
+                'class' => ContentContainerStream::class,
                 'contentContainer' => $this->contentContainer
-            ),
-        );
+            ],
+        ];
     }
 
     /**
      * Generic Start Action for Profile
+     * @throws \yii\base\InvalidConfigException
      */
     public function actionIndex()
     {
@@ -93,7 +91,8 @@ class SpaceController extends ContentContainerController
     /**
      * Default space homepage
      *
-     * @return type
+     * @return string the rendering result.
+     * @throws \yii\base\InvalidConfigException
      */
     public function actionHome()
     {
@@ -113,7 +112,7 @@ class SpaceController extends ContentContainerController
      */
     public function actionFollow()
     {
-        if(Yii::$app->getModule('space')->disableFollow) {
+        if (Yii::$app->getModule('space')->disableFollow) {
             throw new HttpException(403, Yii::t('ContentModule.controllers_ContentController', 'This action is disabled!'));
         }
 
@@ -128,8 +127,7 @@ class SpaceController extends ContentContainerController
         }
 
         if (Yii::$app->request->isAjax) {
-            Yii::$app->response->format = 'json';
-            return ['success' => $success];
+            return $this->asJson(['success' => $success]);
         }
 
         return $this->redirect($space->getUrl());
@@ -146,8 +144,7 @@ class SpaceController extends ContentContainerController
         $success = $space->unfollow();
 
         if (Yii::$app->request->isAjax) {
-            Yii::$app->response->format = 'json';
-            return ['success' => $success];
+            return $this->asJson(['success' => $success]);
         }
 
         return $this->redirect($space->getUrl());
@@ -159,7 +156,7 @@ class SpaceController extends ContentContainerController
     public function actionFollowerList()
     {
         $query = User::find();
-        $query->leftJoin('user_follow', 'user.id=user_follow.user_id AND object_model=:userClass AND user_follow.object_id=:spaceId', [':userClass' => Space::className(), ':spaceId' => $this->getSpace()->id]);
+        $query->leftJoin('user_follow', 'user.id=user_follow.user_id AND object_model=:userClass AND user_follow.object_id=:spaceId', [':userClass' => Space::class, ':spaceId' => $this->getSpace()->id]);
         $query->orderBy(['user_follow.id' => SORT_DESC]);
         $query->andWhere(['IS NOT', 'user_follow.id', new Expression('NULL')]);
         $query->visible();

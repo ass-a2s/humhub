@@ -1,8 +1,8 @@
 <?php
 return array (
   'Basic Settings' => 'Configurações básicas',
-  'Change Email' => 'Mudar e-mail',
-  'Change Password' => 'Mudar senha',
+  'Change Email' => 'Alterar e-mail',
+  'Change Password' => 'Alterar senha',
   'Confirm new password' => 'Confirmar nova senha',
   'Connect account' => 'Conectar conta',
   'Connected Accounts' => 'Contas Conectadas',
@@ -23,6 +23,7 @@ return array (
   'Missing ID AuthClient Attribute from AuthClient.' => 'Faltando atributo ID do AuthClient.',
   'Modules' => 'Módulos',
   'My Account' => 'Minha conta',
+  'Name' => 'Nome',
   'New password' => 'Nova senha',
   'No users found.' => 'Nenhum usuário encontrado.',
   'Notifications' => 'Notificações',

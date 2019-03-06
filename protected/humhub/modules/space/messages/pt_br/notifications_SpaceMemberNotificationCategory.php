@@ -1,5 +1,5 @@
 <?php
 return array (
-  'Receive Notifications for Space Approval and Invite events.' => 'Receber notificações para aprovação de espaços e convite de eventos.',
+  'Receive Notifications of Space Membership events.' => 'Receber notificações de eventos de associação ao espaço.',
   'Space Membership' => 'Membros do Espaço',
 );

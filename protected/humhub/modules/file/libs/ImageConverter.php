@@ -9,6 +9,7 @@
 namespace humhub\modules\file\libs;
 
 use humhub\libs\Helpers;
+use humhub\modules\file\models\File;
 use Yii;
 use yii\base\Exception;
 
@@ -52,6 +53,27 @@ class ImageConverter
     }
 
     /**
+     * Resizes the given file and saves the resized file under the name given by targetFile.
+     *
+     * @see ImageConverter::Resize()
+     * @param File $file
+     * @param $targetFile
+     * @param array $options
+     * @throws Exception
+     * @since 1.3.11
+     */
+    public static function ResizeFile(File $file, $targetFile, $options = [])
+    {
+        $extension = FileHelper::getExtension($file->file_name);
+
+        if(!isset($options['transparent'])) {
+            $options['transparent'] = ($extension === 'png' && ImageConverter::checkTransparent($file->store->get()));
+        }
+
+        static::Resize($file->store->get(), $file->store->get($targetFile), $options);
+    }
+
+    /**
      * Resizes an given Image to an given Size
      *
      * Options Array:
@@ -64,8 +86,9 @@ class ImageConverter
      * @param String $sourceFile
      * @param String $targetFile
      * @param Array $options
+     * @throws Exception
      */
-    public static function Resize($sourceFile, $targetFile, $options = array())
+    public static function Resize($sourceFile, $targetFile, $options = [])
     {
 
         if (!isset($options['width']))
@@ -152,7 +175,7 @@ class ImageConverter
      * @param type $targetFile
      * @param type $options
      */
-    private static function ResizeGD($sourceFile, $targetFile, $options = array())
+    private static function ResizeGD($sourceFile, $targetFile, $options = [])
     {
 
         $width = $options['width'];
@@ -241,7 +264,7 @@ class ImageConverter
                 $dst_h = $sourceHeight;
                 $dst_w = $sourceWidth;
             }
-        } else if ($options['mode'] == 'force') {
+        } elseif ($options['mode'] == 'force') {
 
             // When ratio not fit, crop it - requires given width & height
             if ($width != 0 && $height != 0) {
@@ -312,7 +335,7 @@ class ImageConverter
      * @param type $targetFile
      * @param type $options
      */
-    private static function ResizeImageMagick($sourceFile, $targetFile, $options = array())
+    private static function ResizeImageMagick($sourceFile, $targetFile, $options = [])
     {
         $convertCommand = Yii::$app->getModule('file')->settings->get('imageMagickPath');
         $width = (int) $options['width'];

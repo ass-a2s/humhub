@@ -4,13 +4,24 @@
  * Application configuration for unit tests
  */
 $testConfig = [
+    'class' => 'humhub\components\Application',
+    'timeZone' => 'UTC',
     'components' => [
+        'cache' => [
+            'class' => \yii\caching\DummyCache::class,
+        ],
+        'session' => [
+            'class' => \yii\web\CacheSession::class,
+        ],
         'request' => [
             'cookieValidationKey' => 'test'
         ],
         'user' => [
         	'enableSession' => false
         ],
+        'assetManager' => [
+            'basePath' => '@root/assets/'
+        ]
     ],
 ];
 
@@ -25,4 +36,3 @@ return yii\helpers\ArrayHelper::merge(
                 // Unit Test Config
                 $testConfig
 );
-

@@ -1,44 +1,105 @@
 module.exports = function (grunt) {
 
-    
-
     var uglifyAssetcfg = {};
     uglifyAssetcfg[grunt.option('to')] = grunt.option('from');
     
     var cssMinAssetcfg = {};
     cssMinAssetcfg[grunt.option('to')] = [grunt.option('from')];
-    
-    grunt.log.write(grunt.option('from'));
-    
+
+    var isWin = function() {
+        return (process.platform === "win32");
+    };
+
+    var cmdSep = function() {
+        return isWin() ? '&' : ';';
+    };
+
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
         clean: ["assets/*"],
         shell: {
             buildAssets: {
-                command: "rm static/js/all-*.js ; rm static/css/all-*.css ; rm -rf static/assets/* ; cd protected ; php yii asset humhub/config/assets.php humhub/config/assets-prod.php"
+                command: function() {
+                    let rm = isWin() ? 'del' : 'rm';
+                    let sep = cmdSep();
+                    let delAssets = isWin() ? '(For /D %i in (static\\assets\\*.*) do (rmdir %i /S /Q))' : `${rm} -rf static/assets/*/`;
+                    let dirSep = isWin() ? "\\" : '/';
+                    let jsFile = `static${dirSep}js${dirSep}all-*.js`;
+                    let cssFile = `static${dirSep}css${dirSep}all-*.css`;
+                    return `${rm} ${jsFile} ${sep} ${rm} ${cssFile} ${sep} ${delAssets} ${sep} cd protected ${sep} php yii asset humhub/config/assets.php humhub/config/assets-prod.php`;
+                }
             },
             buildSearch: {
-                command: "cd protected ; php yii search/rebuild"
+                command: function() {
+                    let sep = cmdSep();
+                    return `cd protected ${sep} php yii search/rebuild`;
+                }
+            },
+            testServer: {
+                command: "php -S localhost:8080"
+            },
+            testRun: {
+                command: function() {
+                    let sep = cmdSep();
+                    let moduleName = grunt.option('module') || grunt.option('m') ||  null;
+                    let doBuild = grunt.option('build') || false;
+                    let base = process.cwd();
+
+                    let codeceptPath = `${base}/protected/vendor/codeception/codeception/codecept`;
+                    let rootTestPath = `${base}/protected/humhub/tests`;
+
+                    let testPath = rootTestPath;
+                    if(moduleName) {
+                        testPath = `${base}/protected/humhub/modules/${moduleName}/tests`;
+                    }
+
+                    let suite = grunt.option('suite') || null;
+                    let path = grunt.option('path') || null;
+                    let executionPath = '';
+
+                    if(suite) {
+                        executionPath = suite;
+                    } else if(path) {
+                        if(path.indexOf('codeception') !== 0) {
+                            path = 'codeception' + ((path.indexOf('/') !== 0) ? '/' : '') + path;
+                        }
+                        executionPath = path;
+                    }
+
+                    let options = grunt.option('options') || '';
+                    options += grunt.option('raw') ? ' --no-ansi' : '';
+                    options += grunt.option('env') ? ' --env '+ grunt.option('env') : '';
+
+
+                    let build =  `cd ${rootTestPath} ${sep} php ${codeceptPath} build`;
+
+                    let run = `cd ${testPath} ${sep} php ${codeceptPath} run ${executionPath} ${options}`;
+
+                    return doBuild ? `${build} ${sep} ${run}` : run;
+                }
             },
             buildTheme: {
                 command: function(name) {
-                    var theme = name || grunt.option('name') || "HumHub";
-                    return "cd themes/"+theme+"/less ; lessc -x build.less ../css/theme.css";
+                    let theme = name || grunt.option('name') || "HumHub";
+                    let sep = cmdSep();
+                    return `cd themes/${theme}/less ${sep} lessc -x build.less ../css/theme.css`;
                 }
             },
             migrateCreate: {
                 command: function(name) {
-                    var migrationName = name || grunt.option('name');
-                    return "cd protected; php yii migrate/create "+migrationName;
+                    let migrationName = name || grunt.option('name');
+                    let sep = cmdSep();
+                    return `cd protected ${sep} php yii migrate/create ${migrationName}`;
                 }
             },
             migrateUp: {
                 command: function(modules) {
-                    var includeModuleMigrations = modules || grunt.option('modules') || "1";
-                    return "cd protected; php yii migrate/up --includeModuleMigrations="+includeModuleMigrations;
+                    let includeModuleMigrations = modules || grunt.option('modules') || "1";
+                    let sep = cmdSep();
+                    return `cd protected ${sep} php yii migrate/up --includeModuleMigrations=${includeModuleMigrations}`;
                 }
             }
-            
+
         },
         uglify: {
             build: {
@@ -66,7 +127,7 @@ module.exports = function (grunt) {
             }
         }
     });
-    
+
     grunt.loadNpmTasks('grunt-contrib-less');
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify');
@@ -101,4 +162,6 @@ module.exports = function (grunt) {
      * > grunt shell:buildTheme:MyTheme
      */
     grunt.registerTask('build-theme', ['shell:buildTheme']);
+    grunt.registerTask('test-server', ['shell:testServer']);
+    grunt.registerTask('test', ['shell:testRun']);
 };

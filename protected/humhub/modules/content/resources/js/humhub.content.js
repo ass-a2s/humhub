@@ -15,25 +15,28 @@ humhub.module('content', function (module, require, $) {
     var modal = require('ui.modal');
 
     var DATA_CONTENT_KEY = "content-key";
-    var DATA_CONTENT_EDIT_URL = "content-edit-url";
-    var DATA_CONTENT_SAVE_SELECTOR = "[data-content-save]";
     var DATA_CONTENT_DELETE_URL = "content-delete-url";
 
 
     Component.addSelector('content-component');
 
-    var Content = function (container) {
-        Component.call(this, container);
-    };
+    var Content = Component.extend('Content');
 
-    object.inherits(Content, Component);
+    /**
+     * Abstract loader function which can be used to activate or deactivate a
+     * loader within a content entry.
+     *
+     * If $show is undefined or true the loader animation should be rendered
+     * otherwise it should be removed.
+     *
+     * @param {type} $show
+     * @returns {undefined}
+     */
+    Content.prototype.loader = function ($show) { /* Abstract loader function */ };
+    Content.prototype.edit = function (successHandler) {/** Abstract edit function **/};
 
     Content.getNodeByKey = function (key) {
         return $('[data-content-key="' + key + '"]');
-    };
-
-    Content.prototype.actions = function () {
-        return ['create', 'edit', 'delete'];
     };
 
     Content.prototype.getKey = function () {
@@ -49,60 +52,49 @@ humhub.module('content', function (module, require, $) {
         this.edit(addContentHandler);
     };
 
-    Content.prototype.edit = function (successHandler) {
-        // Currently there is no need for a default implementation
-    };
-
     Content.prototype.delete = function (options) {
         options = options || {};
+
         var that = this;
         return new Promise(function (resolve, reject) {
-            if (!that.hasAction('delete')) {
-                return;
-            }
 
             var modalOptions = options.modal || module.config.modal.deleteConfirm;
 
-            modal.confirm(modalOptions).then(function ($confirmed) {
-                if (!$confirmed) {
-                    resolve(false);
-                    return;
-                }
+            if(options.$trigger && options.$trigger.is('[data-action-confirm]')) {
+                that.deleteContent(resolve, reject);
+            } else {
+                modal.confirm(modalOptions).then(function ($confirmed) {
+                    if (!$confirmed) {
+                        resolve(false);
+                        return;
+                    }
 
-                that.loader();
-                var deleteUrl = that.data(DATA_CONTENT_DELETE_URL) || module.config.deleteUrl;
-                if (deleteUrl) {
-                    client.post(deleteUrl, {
-                        data: {id: that.getKey()}
-                    }).then(function (response) {
-                        that.remove().then(function () {
-                            resolve(true);
-                        });
-                    }).catch(function (err) {
-                        reject(err);
-                    }).finally(function () {
-                        that.loader(false);
-                    });
-                } else {
-                    reject('Content delete was called, but no url could be determined for ' + that.base);
-                    that.loader(false);
-                }
-            });
+                    that.deleteContent(resolve, reject);
+                });
+            }
         });
     };
 
-    /**
-     * Abstract loader function which can be used to activate or deactivate a
-     * loader within a content entry.
-     * 
-     * If $show is undefined or true the loader animation should be rendered
-     * otherwise it should be removed.
-     * 
-     * @param {type} $show
-     * @returns {undefined}
-     */
-    Content.prototype.loader = function ($show) {
-        // Has to be overwritten by content type
+    Content.prototype.deleteContent = function(resolve, reject) {
+        var that = this;
+        that.loader();
+        var deleteUrl = that.data(DATA_CONTENT_DELETE_URL) || module.config.deleteUrl;
+        if (deleteUrl) {
+            client.post(deleteUrl, {
+                data: {id: that.getKey()}
+            }).then(function (response) {
+                that.remove().then(function () {
+                    resolve(true);
+                });
+            }).catch(function (err) {
+                reject(err);
+            }).finally(function () {
+                that.loader(false);
+            });
+        } else {
+            reject('Content delete was called, but no url could be determined for ' + that.base);
+            that.loader(false);
+        }
     };
 
     Content.prototype.remove = function () {
@@ -117,6 +109,10 @@ humhub.module('content', function (module, require, $) {
     };
 
     Content.prototype.permalink = function (evt) {
+        permalink(evt);
+    };
+
+    var permalink = function(evt) {
         var options = module.config.modal.permalink;
         options.permalink = evt.$trigger.data('content-permalink');
 
@@ -135,6 +131,17 @@ humhub.module('content', function (module, require, $) {
         });
     };
 
+    var submitMove = function(evt) {
+        modal.submit(evt).then(function(response) {
+           if(response.success) {
+               if(response.message) {
+                   module.log.success(response.message);
+               }
+               event.trigger('humhub:content:afterMove', response);
+           }
+        });
+    };
+
     var templates = {
         permalinkBody: '<div class="clearfix"><textarea rows="3" class="form-control permalink-txt" spellcheck="false" readonly>{permalink}</textarea><p class="help-block pull-right"><a href="#" data-action-click="copyToClipboard" data-action-target=".permalink-txt"><i class="fa fa-clipboard" aria-hidden="true"></i> {info}</a></p></div>',
         permalinkFooter: '<button data-modal-close class="btn btn-default">{buttonClose}</button><a href="{permalink}" class="btn btn-primary" data-ui-loader>{buttonOpen}</a>'
@@ -142,6 +149,8 @@ humhub.module('content', function (module, require, $) {
 
     module.export({
         Content: Content,
-        templates: templates
+        templates: templates,
+        permalink: permalink,
+        submitMove: submitMove
     });
 });

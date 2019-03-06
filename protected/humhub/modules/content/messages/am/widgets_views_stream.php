@@ -1,0 +1,20 @@
+<?php
+return array (
+  'Back to stream' => 'ወደማስተላለፊያው ተመለስ',
+  'Created by me' => 'በእኔ የተፈጠረ',
+  'Creation time' => 'የተፈጠረበት ጊዜ',
+  'Filter' => 'አጣራ',
+  'Include archived content' => 'በማህደር ላይ የተቀመጡ ይዘቶች ይካተቱ',
+  'Last update' => 'የመጨረሻ ዝመና',
+  'Load more' => 'ተጨማሪ ጫን',
+  'No matches with your selected filters!' => 'ለይተው ከመረጧቸው ጋር የሚመመሳሰሉ የሉም!',
+  'Nothing here yet!' => 'አስካሁን እዚህ ምንም ነገር የለም!',
+  'Only private content' => 'የግል ይዘቶች ብቻ',
+  'Only public content' => 'የህዝብ ይዘቶች ብቻ',
+  'The content has been archived.' => 'ይዘቱ በማህደር ላይ ተቀምጧል',
+  'The content has been deleted.' => 'ይዘቱ ተወግዷል',
+  'The content has been unarchived.' => 'ይዘቱ ከማህደር ወጥቷል',
+  'Where I´m involved' => 'እኔ የተሳተፍኩበት',
+  'With file attachments' => 'ከአባሪ ፋይሎች ጋር',
+  'Your last edit state has been saved!' => 'ለመጨረሻ ጊዜ አርትዖት ያደረጉት ነገር ተቀምጧል!',
+);
