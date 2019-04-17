@@ -1,13 +1,31 @@
 HumHub Change Log
 =================
 
-1.3.12 (Unreleased)
+1.3.13  (Unreleased)
+---------------------------
+- Enh: Added HomeUrl support to ConsoleApplication
+- Fix: #2536 Incorrect log of "Attempt to steal file" due to faulty File::isAssignedTo() check
+- Fix: Wrong help block position in admin basic settings
+- Chng: Removed yiisoft/yii2-apidoc dependency
+- Enh: Double file extension check is now optional and disabled by default
+
+
+1.3.12  (March 26, 2019)
 ---------------------------
 - Enh: Use of new Richtext for About section
 - Chng: Force blank links in old markdown editor
 - Fix: Profile Markdown field files are not attached
 - Chng: Don't restrict`humhub\modules\file\components\FileManager::attach()` to `humhub\components\ActiveRecord`
 - Fix: Richtext preview new line backslash issue
+- Enh: Migrated LDAP features into own submodule
+- Enh: Added new LDAP command line tools
+- Fix: #3347: Fixed searching members in space and users with white space in full name (Baleks)
+- Fix: Deleted Records are not correctly removed from the search index
+- Fix: #3459 Notification counter increment after manual notification fetch
+- Fix: Notification count update does not respect notification group
+- Fix: Change email form is restricted to max 45 characters. Changed to 150 (current DB restriction)
+- Fix: Footer menu renders redundant `<li>` end tag.
+
 
 1.3.11  (March 06, 2019)
 ---------------------------
